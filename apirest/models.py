@@ -35,6 +35,8 @@ class Record(me.Document):
     name = me.StringField(max_length=255)
     lastname = me.StringField(max_length=255)
     sex = me.StringField(max_length=255)
+    
+    # TODO implementar nacionalidad y todo eso
 
     # es abstract por lo de los index pero hay que ver si se puede cambiar
     meta = {'abstract': True}
@@ -50,6 +52,7 @@ class Beneficiary(Record):
     # respuesta! -> https://stackoverflow.com/questions/7955040/mongodb-mongoose-unique-if-not-null
     # mientras, hay que filtrarlo en vista
     document = me.IntField()
+    type = me.StringField(max_length=255, default='beneficiary')
     # no va a tener affiliate pero se debe comprobar en view si tiene afiliado o no antes de editar
     meta = {
         "indexes": [
@@ -66,6 +69,7 @@ class Affiliate(Record):
     document = me.IntField(required=True, unique=True)
     status = me.StringField(max_length=255)
     job_title = me.StringField(max_length=255)
+    type = me.StringField(max_length=255, default='affiliate')
 
     beneficiarys = me.EmbeddedDocumentListField(Relation)
     #     Beneficiary, through="AffiliateToBeneficiary")

@@ -96,7 +96,6 @@ def affiliate(request, id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-
 def affiliate_affiliates(request, id=None):
     if request.method == 'GET' and id:
         try:
@@ -110,7 +109,12 @@ def affiliate_affiliates(request, id=None):
                     if beneficiary.record == this_affiliate.id:
                         affiliates.append({
                             'level': beneficiary.level,
-                            'record': str(affiliate.id)
+                            'record': str(affiliate.id),
+                            'name': str(affiliate.name),
+                            'lastname':str(affiliate.lastname) ,
+                            'document': affiliate.document,
+                            'relation_description' : 'feaure coming soon',
+                            'type' : str(affiliate.type)
                         })
 
             return JsonResponse(affiliates, safe=False)
@@ -154,10 +158,21 @@ def affiliate_beneficiarys(request, id=None):
             this_affiliate = models.Affiliate.objects.get(id=ObjectId(id))
             beneficiarys = []
 
-            for beneficiary in this_affiliate.beneficiarys:
+            for relation in this_affiliate.beneficiarys:
+                print(relation.record)
+                try:
+                    ben = models.Beneficiary.objects.get(id=ObjectId(relation.record))
+                except Exception:
+                    ben = models.Affiliate.objects.get(id=ObjectId(relation.record))
+                
                 beneficiarys.append({
-                    'level': beneficiary.level,
-                    'record': str(beneficiary.record)
+                    'level': relation.level,
+                    'record': str(relation.record),
+                    'name': str(ben.name),
+                    'lastname':str(ben.lastname) ,
+                    'document': ben.document,
+                    'relation_description' : 'feaure coming soon',
+                    'type' : str(ben.type)
                 })
 
             return JsonResponse(beneficiarys, safe=False)
