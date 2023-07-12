@@ -13,6 +13,7 @@ import json
 
 # TODO hacer bien todo el manejo de errores, mandar mensajes segun el error y manejar status 400  y 500
 
+# TODO va a tocar que la api permita elegir cuales fields quiere que se envien, que el frontend pueda pedirlos 
 
 def affiliate(request, id=None):
 
@@ -56,9 +57,11 @@ def affiliate(request, id=None):
     elif request.method == 'PUT' and id:
         try:
             dicc = JSONParser().parse(request)
+            # debugging
+            print(dicc)
             aff = models.Affiliate.objects.get(id=ObjectId(id))
             aff.modify(**dicc)
-            aff.save()
+            aff.save()            
             return JsonResponse({'result': 'ok'})
 
         except (ParseError, FieldDoesNotExist,
@@ -340,7 +343,25 @@ def beneficiary_affiliates(request, id):
     else:  # bad request
         return JsonResponse({'error': 'bad request'}, status=400)
 
-# def records(request):
+def records(request, id=None):
+
+    if id and request.method == 'GET':
+        try:
+            aff = affiliate(request, id)
+            print(aff)
+            return aff
+            # if aff...
+        except (models.Affiliate.DoesNotExist,
+                models.Beneficiary.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception:
+            return JsonResponse({'error': 'internal server error'}, status=500)
+    
+    # elif ...
+    
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
 
 #     if request.method == 'GET':
 #         lista = []

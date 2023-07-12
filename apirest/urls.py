@@ -15,5 +15,5 @@ urlpatterns = [
     # path('relations/affiliate_beneficiary/<int:id>', views.affiliate_beneficiary_relations),
     # # path('relations/affiliate_affiliate/<int:id>', viewss.affiliate_affiliate_relations),
     # TODO crear records
-    # path('records', views.records)
+    path('records/<str:id>', views.records)
 ]

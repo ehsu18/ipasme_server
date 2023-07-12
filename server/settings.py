@@ -15,6 +15,7 @@ import os
 
 from mongoengine import connect
 connect('testing-mongoengine')
+# TODO se debe manejar el error de conexion
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
