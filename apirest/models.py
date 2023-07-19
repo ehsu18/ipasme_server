@@ -2,6 +2,7 @@
 # from django.core.exceptions import ValidationError
 
 import mongoengine as me
+import datetime
 
 
 # class User(models.Model):
@@ -32,10 +33,17 @@ class Record(me.Document):
 
     # creo que no es necesario poner id
     # id = me.IntField(primary_key=True, unique=True, )
-    name = me.StringField(max_length=255)
-    lastname = me.StringField(max_length=255)
-    sex = me.StringField(max_length=255)
-    
+    nationality_options = (('V','Venezolano'), ('E', 'Extranjero'))
+    civilstatus_options = ('Soltero', 'Casado', 'Viudo', 'Divorciado')
+    gender_options = (('M', 'masculino'), ('F','femenino'))
+
+
+    names = me.StringField(max_length=255)
+    lastnames = me.StringField(max_length=255)
+    gender = me.StringField(max_length=255, choices=gender_options)
+    nationality = me.StringField(max_length=255, choices=nationality_options)
+    dateofbirth = me.DateTimeField(default=None) # TODO convertir a fecha el la API
+    civilstatus = me.StringField(max_length=255, choices=civilstatus_options)
     # TODO implementar nacionalidad y todo eso
 
     # es abstract por lo de los index pero hay que ver si se puede cambiar
@@ -45,6 +53,10 @@ class Record(me.Document):
     # class Meta:
     #     abstract = True
 
+    @property
+    def nationality_display(self):
+        return self.nationality_options[self.nationality]
+
 
 class Beneficiary(Record):
     # hay que validar document como unique pero que ignore null
@@ -53,7 +65,7 @@ class Beneficiary(Record):
     # mientras, hay que filtrarlo en vista
     document = me.IntField()
     type = me.StringField(max_length=255, default='beneficiary')
-    # no va a tener affiliate pero se debe comprobar en view si tiene afiliado o no antes de editar
+    # TODO no va a tener affiliate pero se debe comprobar en view si tiene afiliado o no antes de editar
     meta = {
         "indexes": [
             {
@@ -66,6 +78,8 @@ class Beneficiary(Record):
 
 class Affiliate(Record):
     # hereda id y todo eso de Record
+    jobstatus_options = ('Activo', 'Reposo', 'Jubilado', 'Inactivo') # TODO revisar cuales hay
+
     document = me.IntField(required=True, unique=True)
     status = me.StringField(max_length=255)
     job_title = me.StringField(max_length=255)

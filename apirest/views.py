@@ -23,9 +23,9 @@ def affiliate(request, id=None):
             # return JsonResponse(json.loads(record.to_json()))
             return JsonResponse({
                 'id': str(record.id),
-                'name': record.name,
-                'lastname': record.lastname,
-                'sex': record.sex,
+                'names': record.names,
+                'lastnames': record.lastnames,
+                'gender': record.gender,
                 'document': record.document,
                 'status': record.status,
                 'job_title': record.job_title,
@@ -35,7 +35,7 @@ def affiliate(request, id=None):
                 InvalidId) as e:
             return JsonResponse({'error': str(e)}, status=404)
         except Exception:
-            raise
+            
             return JsonResponse({'error': 'internal server error'}, status=500)
 
     elif request.method == 'GET':
@@ -43,9 +43,9 @@ def affiliate(request, id=None):
         for record in models.Affiliate.objects.all():
             lista.append({
                 'id': str(record.id),
-                'name': record.name,
-                'lastname': record.lastname,
-                'sex': record.sex,
+                'names': record.names,
+                'lastnames': record.lastnames,
+                'gender': record.gender,
                 'document': record.document,
                 'status': record.status,
                 'job_title': record.job_title,
@@ -113,8 +113,8 @@ def affiliate_affiliates(request, id=None):
                         affiliates.append({
                             'level': beneficiary.level,
                             'record': str(affiliate.id),
-                            'name': str(affiliate.name),
-                            'lastname':str(affiliate.lastname) ,
+                            'names': str(affiliate.names),
+                            'lastnames':str(affiliate.lastnames) ,
                             'document': affiliate.document,
                             'relation_description' : 'feaure coming soon',
                             'type' : str(affiliate.type)
@@ -171,8 +171,8 @@ def affiliate_beneficiarys(request, id=None):
                 beneficiarys.append({
                     'level': relation.level,
                     'record': str(relation.record),
-                    'name': str(ben.name),
-                    'lastname':str(ben.lastname) ,
+                    'names': str(ben.names),
+                    'lastnames':str(ben.lastnames) ,
                     'document': ben.document,
                     'relation_description' : 'feaure coming soon',
                     'type' : str(ben.type)
@@ -240,9 +240,9 @@ def beneficiary(request, id=None):
             record = models.Beneficiary.objects.get(id=ObjectId(id))
             return JsonResponse({
                 'id': str(record.id),
-                'name': record.name,
-                'sex': record.sex,
-                'lastname': record.lastname,
+                'names': record.names,
+                'gender': record.gender,
+                'lastnames': record.lastnames,
                 'document': record.document,
                 'type': 'beneficiary',
             })
@@ -257,9 +257,9 @@ def beneficiary(request, id=None):
         for record in models.Beneficiary.objects.all():
             lista.append({
                 'id': str(record.id),
-                'name': record.name,
-                'sex': record.sex,
-                'lastname': record.lastname,
+                'names': record.names,
+                'gender': record.gender,
+                'lastnames': record.lastnames,
                 'document': record.document,
                 'type': 'beneficiary',
             })
@@ -355,7 +355,8 @@ def records(request, id=None):
                 models.Beneficiary.DoesNotExist,
                 InvalidId) as e:
             return JsonResponse({'error': str(e)}, status=404)
-        except Exception:
+        except Exception as e:
+            raise
             return JsonResponse({'error': 'internal server error'}, status=500)
     
     # elif ...
@@ -373,9 +374,9 @@ def records(request, id=None):
 #         for record in q:
 #             dicc = {
 #                 'id': record.id,
-#                 'name': record.name,
-#                 'lastname': record.lastname,
-#                 'sex': record.sex,
+#                 'names': record.names,
+#                 'lastnames': record.lastnames,
+#                 'gender': record.gender,
 #                 'document': record.document,
 #             }
 
