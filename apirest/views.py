@@ -6,7 +6,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.exceptions import ParseError
 from django.db.utils import IntegrityError
 
-from mongoengine.errors import NotUniqueError, FieldDoesNotExist
+from mongoengine.errors import NotUniqueError, FieldDoesNotExist, OperationError
 from bson import ObjectId
 from bson.errors import InvalidId
 import json
@@ -29,7 +29,11 @@ def affiliate(request, id=None):
                 'document': record.document,
                 'status': record.status,
                 'job_title': record.job_title,
+                'civilstatus': record.civilstatus,
+                'placeofbirth' : record.placeofbirth,
+                'dateofbirth' : record.dateofbirth, 
                 'type': 'affiliate',
+                'nationality': record.nationality
             })
         except (models.Affiliate.DoesNotExist,
                 InvalidId) as e:
@@ -48,6 +52,9 @@ def affiliate(request, id=None):
                 'gender': record.gender,
                 'document': record.document,
                 'status': record.status,
+                'civilstatus': record.civilstatus,
+                'placeofbirth':record.placeofbirth,
+                'dateofbirth' : record.dateofbirth, 
                 'job_title': record.job_title,
                 'type': 'affiliate',
             })
@@ -65,11 +72,12 @@ def affiliate(request, id=None):
             return JsonResponse({'result': 'ok'})
 
         except (ParseError, FieldDoesNotExist,
-                models.Affiliate.DoesNotExist) as e:
+                models.Affiliate.DoesNotExist,
+                OperationError) as e:
             return JsonResponse({'error': str(e)}, status=400)
 
         except Exception as e:
-            print(e)
+            raise
             return JsonResponse({'error': 'bad request'}, status=400)
 
     elif request.method == 'POST':

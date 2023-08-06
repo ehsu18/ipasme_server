@@ -44,6 +44,7 @@ class Record(me.Document):
     nationality = me.StringField(max_length=255, choices=nationality_options)
     dateofbirth = me.DateTimeField(default=None) # TODO convertir a fecha el la API
     civilstatus = me.StringField(max_length=255, choices=civilstatus_options)
+    placeofbirth = me.StringField(max_length=255)
     # TODO implementar nacionalidad y todo eso
 
     # es abstract por lo de los index pero hay que ver si se puede cambiar
@@ -78,6 +79,7 @@ class Beneficiary(Record):
 
 class Affiliate(Record):
     # hereda id y todo eso de Record
+    # TODO ordenar todo para que sea mas legible
     jobstatus_options = ('Activo', 'Reposo', 'Jubilado', 'Inactivo') # TODO revisar cuales hay
 
     document = me.IntField(required=True, unique=True)
