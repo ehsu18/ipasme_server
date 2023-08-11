@@ -15,6 +15,31 @@ import json
 
 # TODO va a tocar que la api permita elegir cuales fields quiere que se envien, que el frontend pueda pedirlos 
 
+
+'''
+TODO
+se podria intentar cambiar la forma en que se envian los datos en la api
+puede ser:
+
+document
+basic_info {
+    name    
+    lastname
+    fecha nacimiento
+    estado civil
+    sexo
+}
+contact_info {
+    ta ta ta
+}
+beneficiarys {
+    ta ta ta
+}
+
+asi con todas las secciones para manejar mas comodamente la
+informacion y las fechas de actualizacion
+'''
+
 def affiliate(request, id=None):
 
     if id and request.method == 'GET':
@@ -27,20 +52,25 @@ def affiliate(request, id=None):
                 'lastnames': record.lastnames,
                 'gender': record.gender,
                 'document': record.document,
-                'status': record.status,
                 'job_title': record.job_title,
                 'civilstatus': record.civilstatus,
                 'placeofbirth' : record.placeofbirth,
                 'dateofbirth' : record.dateofbirth, 
                 'type': 'affiliate',
                 'nationality': record.nationality,
+                'phone_personal':record.phone_personal,
+                'phone_optional':record.phone_optional,
+                'home_direction':record.home_direction,
+                'job_status' : record.job_status,
+                'job_title' : record.job_title,
+                'job_direction' : record.job_direction
                 # 'personaldata_last_mod_date' : record.personaldata_last_mod_date
             })
         except (models.Affiliate.DoesNotExist,
                 InvalidId) as e:
             return JsonResponse({'error': str(e)}, status=404)
         except Exception:
-            
+            raise
             return JsonResponse({'error': 'internal server error'}, status=500)
 
     elif request.method == 'GET':
@@ -52,12 +82,18 @@ def affiliate(request, id=None):
                 'lastnames': record.lastnames,
                 'gender': record.gender,
                 'document': record.document,
-                'status': record.status,
-                'civilstatus': record.civilstatus,
-                'placeofbirth':record.placeofbirth,
-                'dateofbirth' : record.dateofbirth, 
                 'job_title': record.job_title,
+                'civilstatus': record.civilstatus,
+                'placeofbirth' : record.placeofbirth,
+                'dateofbirth' : record.dateofbirth, 
                 'type': 'affiliate',
+                'nationality': record.nationality,
+                'phone_personal':record.phone_personal,
+                'phone_optional':record.phone_optional,
+                'home_direction':record.home_direction,
+                'job_status' : record.job_status,
+                'job_title' : record.job_title,
+                'job_direction' : record.job_direction
                 # 'personaldata_last_mod_date' : record.personaldata_last_mod_date
             })
         # print(lista)

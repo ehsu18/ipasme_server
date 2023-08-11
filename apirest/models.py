@@ -47,6 +47,11 @@ class Record(me.Document):
     placeofbirth = me.StringField(max_length=255)
     # personaldata_last_mod_date = me.DateField(default=datetime.datetime.utcnow)
 
+    # datos de contacto
+    phone_personal = me.StringField(max_length=255)
+    phone_optional = me.StringField(max_length=255)
+    home_direction = me.StringField(max_length=255)
+
     # es abstract por lo de los index pero hay que ver si se puede cambiar
     meta = {'abstract': True}
 
@@ -83,9 +88,12 @@ class Affiliate(Record):
     jobstatus_options = ('Activo', 'Reposo', 'Jubilado', 'Inactivo') # TODO revisar cuales hay
 
     document = me.IntField(required=True, unique=True)
-    status = me.StringField(max_length=255)
-    job_title = me.StringField(max_length=255)
     type = me.StringField(max_length=255, default='affiliate')
+
+    #datos laborales
+    job_status = me.StringField(max_length=255)
+    job_title = me.StringField(max_length=255)
+    job_direction = me.StringField(max_length=255)
 
     beneficiarys = me.EmbeddedDocumentListField(Relation)
     #     Beneficiary, through="AffiliateToBeneficiary")
