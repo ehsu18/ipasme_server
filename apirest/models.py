@@ -30,7 +30,7 @@ class Relation(me.EmbeddedDocument):
 class Record(me.Document):
     '''This is a base model for all records, containing
     fields that are used in affiliate and beneficiary'''
-
+    # TODO implementar un auto serialize/json
     # creo que no es necesario poner id
     # id = me.IntField(primary_key=True, unique=True, )
     nationality_options = (('V','Venezolano'), ('E', 'Extranjero'))
@@ -45,7 +45,7 @@ class Record(me.Document):
     dateofbirth = me.DateTimeField(default=None) # TODO convertir a fecha el la API
     civilstatus = me.StringField(max_length=255, choices=civilstatus_options)
     placeofbirth = me.StringField(max_length=255)
-    # TODO implementar nacionalidad y todo eso
+    # personaldata_last_mod_date = me.DateField(default=datetime.datetime.utcnow)
 
     # es abstract por lo de los index pero hay que ver si se puede cambiar
     meta = {'abstract': True}

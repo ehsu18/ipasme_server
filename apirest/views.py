@@ -33,7 +33,8 @@ def affiliate(request, id=None):
                 'placeofbirth' : record.placeofbirth,
                 'dateofbirth' : record.dateofbirth, 
                 'type': 'affiliate',
-                'nationality': record.nationality
+                'nationality': record.nationality,
+                # 'personaldata_last_mod_date' : record.personaldata_last_mod_date
             })
         except (models.Affiliate.DoesNotExist,
                 InvalidId) as e:
@@ -57,6 +58,7 @@ def affiliate(request, id=None):
                 'dateofbirth' : record.dateofbirth, 
                 'job_title': record.job_title,
                 'type': 'affiliate',
+                # 'personaldata_last_mod_date' : record.personaldata_last_mod_date
             })
         # print(lista)
         return JsonResponse(lista, safe=False)
