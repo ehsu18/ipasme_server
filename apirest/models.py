@@ -85,19 +85,48 @@ class Beneficiary(Record):
 class Affiliate(Record):
     # hereda id y todo eso de Record
     # TODO ordenar todo para que sea mas legible
-    jobstatus_options = ('Activo', 'Reposo', 'Jubilado', 'Inactivo') # TODO revisar cuales hay
+    job_status_options = ('Activo', 'Reposo', 'Jubilado', 'Inactivo') # TODO revisar cuales hay
 
     document = me.IntField(required=True, unique=True)
     type = me.StringField(max_length=255, default='affiliate')
 
     #datos laborales
-    job_status = me.StringField(max_length=255)
+    job_status = me.StringField(max_length=255, choices=job_status_options)
     job_title = me.StringField(max_length=255)
     job_direction = me.StringField(max_length=255)
 
     beneficiarys = me.EmbeddedDocumentListField(Relation)
     #     Beneficiary, through="AffiliateToBeneficiary")
 
+    def get_json(self):
+        return {
+            
+            'type':self.type,
+            'id':str(self.id),
+            'basic_info' : {
+                'document': self.document,
+                'names' : self.names,
+                'lastnames' : self.lastnames,
+                'gender' : self.gender,
+                'nationality' : self.nationality, 
+                'dateofbirth' : self.dateofbirth, #TODO convertir a iso
+                'civilstatus' : self.civilstatus,
+                'placeofbirth' : self.placeofbirth
+            } ,
+            'contact_info' : {
+                'phone_personal':self.phone_personal,
+                'phone_optional':self.phone_optional,
+                'home_direction':self.home_direction
+            } ,
+            'job_info' : {
+                'job_status':self.job_status,
+                'job_title':self.job_title,
+                'job_direction':self.job_direction
+            } 
+        # TODO integrar beneficiarys aqui (al menos los id)
+            
+        }
+    
     meta = {
         "indexes": [
             {

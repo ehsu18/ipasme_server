@@ -10,6 +10,8 @@ from mongoengine.errors import NotUniqueError, FieldDoesNotExist, OperationError
 from bson import ObjectId
 from bson.errors import InvalidId
 import json
+from collections.abc import MutableMapping
+
 
 # TODO hacer bien todo el manejo de errores, mandar mensajes segun el error y manejar status 400  y 500
 
@@ -45,27 +47,8 @@ def affiliate(request, id=None):
     if id and request.method == 'GET':
         try:
             record = models.Affiliate.objects.get(id=ObjectId(id))
-            # return JsonResponse(json.loads(record.to_json()))
-            return JsonResponse({
-                'id': str(record.id),
-                'names': record.names,
-                'lastnames': record.lastnames,
-                'gender': record.gender,
-                'document': record.document,
-                'job_title': record.job_title,
-                'civilstatus': record.civilstatus,
-                'placeofbirth' : record.placeofbirth,
-                'dateofbirth' : record.dateofbirth, 
-                'type': 'affiliate',
-                'nationality': record.nationality,
-                'phone_personal':record.phone_personal,
-                'phone_optional':record.phone_optional,
-                'home_direction':record.home_direction,
-                'job_status' : record.job_status,
-                'job_title' : record.job_title,
-                'job_direction' : record.job_direction
-                # 'personaldata_last_mod_date' : record.personaldata_last_mod_date
-            })
+            return JsonResponse(record.get_json())
+            
         except (models.Affiliate.DoesNotExist,
                 InvalidId) as e:
             return JsonResponse({'error': str(e)}, status=404)
@@ -101,17 +84,26 @@ def affiliate(request, id=None):
 
     elif request.method == 'PUT' and id:
         try:
-            dicc = JSONParser().parse(request)
-            # debugging
-            print(dicc)
+            # se puede pasar esto a una funcion
+            dic = JSONParser().parse(request)
+            print(dic)
+            data = {}
+            for k,v in dic.items():
+                if isinstance(v, MutableMapping):
+                    data.update(v)
+                    # TODO aqui se debe agregar el elemento de la fecha
+                else:
+                    data[k]=v
+
             aff = models.Affiliate.objects.get(id=ObjectId(id))
-            aff.modify(**dicc)
+            aff.modify(**data)
             aff.save()            
             return JsonResponse({'result': 'ok'})
 
         except (ParseError, FieldDoesNotExist,
                 models.Affiliate.DoesNotExist,
                 OperationError) as e:
+            raise
             return JsonResponse({'error': str(e)}, status=400)
 
         except Exception as e:
