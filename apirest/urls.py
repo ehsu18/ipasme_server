@@ -11,6 +11,7 @@ urlpatterns = [
     path('beneficiary/<str:id>', views.beneficiary),
     path('beneficiary_affiliates/<str:id>', views.beneficiary_affiliates),
 
+    path('citas/<str:record_id>', views.citas),
     # path('relations/affiliate_beneficiary', views.affiliate_beneficiary_relations),
     # path('relations/affiliate_beneficiary/<int:id>', views.affiliate_beneficiary_relations),
     # # path('relations/affiliate_affiliate/<int:id>', viewss.affiliate_affiliate_relations),

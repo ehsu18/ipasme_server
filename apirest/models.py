@@ -52,6 +52,11 @@ class Record(me.Document):
     phone_optional = me.StringField(max_length=255)
     home_direction = me.StringField(max_length=255)
 
+    # datos medicos
+    rh_group = me.StringField(max_length=255)
+    enfermedades_hereditarias = me.StringField(max_length=255)
+    enfermedades_cronicas = me.StringField(max_length=255)
+    alergias = me.StringField(max_length=255)
     # es abstract por lo de los index pero hay que ver si se puede cambiar
     meta = {'abstract': True}
 
@@ -122,8 +127,15 @@ class Affiliate(Record):
                 'job_status':self.job_status,
                 'job_title':self.job_title,
                 'job_direction':self.job_direction
+            } ,
+            'medic_info' : {
+                'rh_group':self.rh_group,
+                'enfermedades_hereditarias':self.enfermedades_hereditarias,
+                'enfermedades_cronicas':self.enfermedades_cronicas,
+                'alergias':self.alergias
             } 
         # TODO integrar beneficiarys aqui (al menos los id)
+        # TODO hacer lo mismo para beneficiarys
             
         }
     
@@ -135,3 +147,39 @@ class Affiliate(Record):
             }
         ]
     }
+
+class Cita(me.Document):
+    #TODO fecha
+    record_id = me.StringField()
+    age = me.IntField()
+    area = me.StringField()
+    fecha = me.DateTimeField(default=None)
+    record_type = me.StringField()
+    first_cita = me.BooleanField()
+    tension_arterial = me.StringField()
+    peso = me.FloatField()
+    estudio_lab = me.BooleanField()
+    estudio_rx = me.BooleanField()
+    estudio_eco = me.BooleanField()
+    reposo = me.IntField()
+    ref = me.BooleanField()
+    diagnose = me.StringField()
+
+    def get_json(self):
+        return {
+            "id": str(self.id),
+            "record_id": str(self.record_id),
+            "area" : self.area,
+            "fecha": self.fecha,
+            "age": self.age,
+            "record_type": self.record_type,
+            "first_cita": self.first_cita,
+            "tension_arterial": self.tension_arterial,
+            "peso": self.peso,
+            "estudio_lab": self.estudio_lab,
+            "estudio_rx": self.estudio_rx,
+            "estudio_eco": self.estudio_eco,
+            "reposo": self.reposo,
+            "ref": self.ref,
+            "diagnose" : self.diagnose
+            }

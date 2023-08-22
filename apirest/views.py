@@ -59,26 +59,7 @@ def affiliate(request, id=None):
     elif request.method == 'GET':
         lista = []
         for record in models.Affiliate.objects.all():
-            lista.append({
-                'id': str(record.id),
-                'names': record.names,
-                'lastnames': record.lastnames,
-                'gender': record.gender,
-                'document': record.document,
-                'job_title': record.job_title,
-                'civilstatus': record.civilstatus,
-                'placeofbirth' : record.placeofbirth,
-                'dateofbirth' : record.dateofbirth, 
-                'type': 'affiliate',
-                'nationality': record.nationality,
-                'phone_personal':record.phone_personal,
-                'phone_optional':record.phone_optional,
-                'home_direction':record.home_direction,
-                'job_status' : record.job_status,
-                'job_title' : record.job_title,
-                'job_direction' : record.job_direction
-                # 'personaldata_last_mod_date' : record.personaldata_last_mod_date
-            })
+            lista.append(record.get_json())
         # print(lista)
         return JsonResponse(lista, safe=False)
 
@@ -112,6 +93,7 @@ def affiliate(request, id=None):
 
     elif request.method == 'POST':
         try:
+            # TODO adaptar a la nueva api
             aff = models.Affiliate(**JSONParser().parse(request))
             aff.save()
             return JsonResponse({'result': 'ok'})
@@ -402,6 +384,27 @@ def records(request, id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
+def citas(request, record_id=None):
+    if id and request.method == 'GET':
+        try:
+            resultados = models.Cita.objects(record_id=record_id)
+            print(resultados)
+            citas = []
+            for cita in resultados:
+                citas.append(cita.get_json())
+            return JsonResponse(citas, safe=False)
+            
+        except (models.Cita.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception:
+            raise
+            return JsonResponse({'error': 'internal server error'}, status=500)
+    
+    # elif ...
+    
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
 #     if request.method == 'GET':
 #         lista = []
 
