@@ -183,3 +183,27 @@ class Cita(me.Document):
             "ref": self.ref,
             "diagnose" : self.diagnose
             }
+
+class Citaodon(me.Document):
+    #TODO fecha
+    record_id = me.StringField()
+    age = me.IntField()
+    fecha = me.DateTimeField(default=None)
+    record_type = me.StringField()
+    first_cita = me.BooleanField()
+    reposo = me.IntField()
+    ref = me.BooleanField()
+    diagnose = me.StringField()
+
+    def get_json(self):
+        return {
+            "id": str(self.id),
+            "record_id": str(self.record_id),
+            "fecha": self.fecha,
+            "age": self.age,
+            "record_type": self.record_type,
+            "first_cita": self.first_cita,
+            "reposo": self.reposo,
+            "ref": self.ref,
+            "diagnose" : self.diagnose
+            }

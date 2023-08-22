@@ -405,32 +405,26 @@ def citas(request, record_id=None):
     
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
-#     if request.method == 'GET':
-#         lista = []
 
-#         q1 = models.Affiliate.objects.all()
-#         q2 = models.Beneficiary.objects.all()
-#         q = list(chain(q1, q2))
-
-#         for record in q:
-#             dicc = {
-#                 'id': record.id,
-#                 'names': record.names,
-#                 'lastnames': record.lastnames,
-#                 'gender': record.gender,
-#                 'document': record.document,
-#             }
-
-#             if isinstance(record, models.Beneficiary):
-#                 dicc['type'] = 'beneficiary'
-#             elif isinstance(record, models.Affiliate):
-#                 dicc['status'] = record.status
-#                 dicc['job_title'] = record.job_title
-#                 dicc['type'] = 'affiliate'
-#             else:
-#                 print(record, 'is not an expected model')
-#                 continue
-
-#             lista.append(dicc)
-
-#         return JsonResponse(lista, safe=False)
+def citasodon(request, record_id=None):
+    if id and request.method == 'GET':
+        try:
+            resultados = models.Citaodon.objects(record_id=record_id)
+            print(resultados)
+            citas = []
+            for cita in resultados:
+                citas.append(cita.get_json())
+            return JsonResponse(citas, safe=False)
+            
+        except (models.CitaOdon.DoesNotExist,
+                InvalidId) as e:
+            # TODO los errores DoesNotExist y eso deberian estar en un nivel superior, fuera del if y usando document.DoesNotExist
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception:
+            raise
+            return JsonResponse({'error': 'internal server error'}, status=500)
+    
+    # elif ...
+    
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
