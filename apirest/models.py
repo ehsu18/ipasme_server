@@ -58,6 +58,7 @@ class Record(me.Document):
     enfermedades_cronicas = me.StringField(max_length=255)
     alergias = me.StringField(max_length=255)
     # es abstract por lo de los index pero hay que ver si se puede cambiar
+
     meta = {'abstract': True}
 
     # meta data
@@ -101,7 +102,8 @@ class Affiliate(Record):
     job_direction = me.StringField(max_length=255)
 
     beneficiarys = me.EmbeddedDocumentListField(Relation)
-    #     Beneficiary, through="AffiliateToBeneficiary")
+    # Beneficiary, through="AffiliateToBeneficiary")
+
 
     def get_json(self):
         return {
@@ -133,7 +135,8 @@ class Affiliate(Record):
                 'enfermedades_hereditarias':self.enfermedades_hereditarias,
                 'enfermedades_cronicas':self.enfermedades_cronicas,
                 'alergias':self.alergias
-            } 
+            } ,
+            # hacer esto con beneficiarys"reposos" : [x.get_json() for x in self.reposos]
         # TODO integrar beneficiarys aqui (al menos los id)
         # TODO hacer lo mismo para beneficiarys
             
@@ -147,6 +150,35 @@ class Affiliate(Record):
             }
         ]
     }
+
+class Reposo(me.Document):
+    
+    record_id = me.ReferenceField(Affiliate, reverse_delete_rule=me.CASCADE) #TODO no se si debe ser mas bien a Record
+    fecha_inicio = me.DateTimeField(default=None)
+    fecha_fin = me.DateTimeField(default=None)
+    dias = me.IntField()
+    otorgado = me.StringField()
+    conformado = me.StringField()
+    medico = me.StringField()
+    especialidad = me.StringField()
+    total_reposo = me.IntField()
+    total_dias = me.IntField()
+
+    def get_json(self):
+        return {
+            "fecha_inicio": self.fecha_inicio,
+            "fecha_fin": self.fecha_fin,
+            "dias": self.dias,
+            "otorgado" : self.otorgado,
+            "conformado" : self.conformado,
+            "medico":self.medico,
+            "especialidad":self.especialidad,
+            "total_reposo":self.total_reposo,
+            "total_dias":self.total_dias,
+            "record_id":str(self.record_id)
+            # supongo que tenga un id o un index
+        }
+    
 
 class Cita(me.Document):
     #TODO fecha
@@ -186,7 +218,7 @@ class Cita(me.Document):
 
 class Citaodon(me.Document):
     #TODO fecha
-    record_id = me.StringField()
+    record_id = me.StringField() # TODO hacerlo con reference field
     age = me.IntField()
     fecha = me.DateTimeField(default=None)
     record_type = me.StringField()

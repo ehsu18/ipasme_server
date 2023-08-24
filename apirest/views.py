@@ -428,3 +428,88 @@ def citasodon(request, record_id=None):
     
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
+
+def affiliate_reposos(request, record_id=None):
+    if record_id and request.method == 'GET':
+        try:
+            return JsonResponse([x.get_json() for x in models.Reposo.objects(record_id=ObjectId(record_id))], safe=False)
+            
+        except (models.Reposo.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception:
+            raise
+            return JsonResponse({'error': 'internal server error'}, status=500)
+
+    elif request.method == 'GET':
+
+        return JsonResponse({'error': 'bad request'}, status=400)
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
+
+def reposos(request, id=None):
+
+    if id and request.method == 'GET':
+        try:
+            reposo = models.Reposo.objects.get(id=ObjectId(id))
+            return JsonResponse(reposo.get_json())
+            
+        except (models.Reposo.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception:
+            raise
+            return JsonResponse({'error': 'internal server error'}, status=500)
+
+    elif request.method == 'GET':
+
+        return JsonResponse([x.get_json() for x in models.Reposo.objects.all()], safe=False)
+
+    elif request.method == 'PUT' and id:
+        try:
+            # se puede pasar esto a una funcion
+            data = JSONParser().parse(request)
+            print(data)
+
+            reposo = models.Reposo.objects.get(id=ObjectId(id))
+            reposo.modify(**data)
+            reposo.save()            
+            return JsonResponse({'result': 'ok'})
+
+        except (ParseError, FieldDoesNotExist,
+                models.Reposo.DoesNotExist,
+                OperationError) as e:
+            # raise
+            return JsonResponse({'error': str(e)}, status=400)
+
+        except Exception as e:
+            raise
+            return JsonResponse({'error': 'bad request'}, status=400)
+
+    # elif request.method == 'POST':
+    #     try:
+    #         # TODO adaptar a la nueva api
+    #         aff = models.Affiliate(**JSONParser().parse(request))
+    #         aff.save()
+    #         return JsonResponse({'result': 'ok'})
+
+    #     except (TypeError, ParseError,
+    #             IntegrityError, NotUniqueError) as e:
+    #         return JsonResponse({'error': str(e)}, status=400)
+
+    #     except Exception as e:
+    #         # print(e)
+    #         raise
+    #         return JsonResponse({'error': 'bad request'}, status=400)
+
+    # elif request.method == 'DELETE' and id:
+    #     try:
+    #         aff = models.Affiliate.objects.filter(id=ObjectId(id))
+    #         aff.delete()
+    #         return JsonResponse({'result': 'ok'})
+    #     except Exception as e:
+    #         print(e)
+    #         return JsonResponse({'error': 'Internal server error'}, status=500)
+
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
