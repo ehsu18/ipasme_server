@@ -239,3 +239,35 @@ class Citaodon(me.Document):
             "ref": self.ref,
             "diagnose" : self.diagnose
             }
+
+class Cuido(me.Document):
+    
+    record_id = me.ReferenceField(Affiliate, reverse_delete_rule=me.CASCADE) #TODO no se si debe ser mas bien a Record
+    fecha_inicio = me.DateTimeField(default=None)
+    fecha_fin = me.DateTimeField(default=None)
+    dias = me.IntField()
+    beneficiary = me.StringField()
+    beneficiary_name = me.StringField()
+    beneficiary_id = me.StringField(default=None) 
+    beneficiary_type = me.StringField()
+    reason = me.StringField()
+
+    total_cuido = me.IntField()
+    total_dias = me.IntField()
+
+    def get_json(self):
+        return {
+            "fecha_inicio": self.fecha_inicio,
+            "fecha_fin": self.fecha_fin,
+            "dias": self.dias,
+            "beneficiary": self.beneficiary,
+            "beneficiary_name" : self.beneficiary_id,
+            "beneficiary_id" : self.beneficiary_id,
+            "beneficiary_type" : self.beneficiary_type,
+            "reason" : self.reason,
+            "total_cuido":self.total_cuido,
+            "total_dias":self.total_dias,
+            "record_id":str(self.record_id)
+            # supongo que tenga un id o un index
+        }
+  

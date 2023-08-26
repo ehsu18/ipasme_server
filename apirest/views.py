@@ -513,3 +513,63 @@ def reposos(request, id=None):
 
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
+
+def affiliate_cuidos(request, record_id=None):
+    if record_id and request.method == 'GET':
+        try:
+            return JsonResponse([x.get_json() for x in models.Cuido.objects(record_id=ObjectId(record_id))], safe=False)
+            
+        except (models.Cuido.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception:
+            raise
+            return JsonResponse({'error': 'internal server error'}, status=500)
+
+    elif request.method == 'GET':
+
+        return JsonResponse({'error': 'bad request'}, status=400)
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
+
+def cuidos(request, id=None):
+
+    if id and request.method == 'GET':
+        try:
+            cuido = models.Cuido.objects.get(id=ObjectId(id))
+            return JsonResponse(cuido.get_json())
+            
+        except (models.Cuido.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception:
+            raise
+            return JsonResponse({'error': 'internal server error'}, status=500)
+
+    elif request.method == 'GET':
+
+        return JsonResponse([x.get_json() for x in models.Cuido.objects.all()], safe=False)
+
+    elif request.method == 'PUT' and id:
+        try:
+            # se puede pasar esto a una funcion
+            data = JSONParser().parse(request)
+            print(data)
+
+            cuido = models.Cuido.objects.get(id=ObjectId(id))
+            cuido.modify(**data)
+            cuido.save()            
+            return JsonResponse({'result': 'ok'})
+
+        except (ParseError, FieldDoesNotExist,
+                models.Cuido.DoesNotExist,
+                OperationError) as e:
+            # raise
+            return JsonResponse({'error': str(e)}, status=400)
+
+        except Exception as e:
+            raise
+            return JsonResponse({'error': 'bad request'}, status=400)
+
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)

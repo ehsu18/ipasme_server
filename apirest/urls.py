@@ -16,6 +16,8 @@ urlpatterns = [
     path("reposos", views.reposos),
     path("reposos/<str:id>", views.reposos),
     path("affiliate_reposos/<str:record_id>", views.affiliate_reposos),
+    path("cuidos/<str:id>", views.cuidos),
+    path("affiliate_cuidos/<str:record_id>", views.affiliate_cuidos),
     # path('relations/affiliate_beneficiary', views.affiliate_beneficiary_relations),
     # path('relations/affiliate_beneficiary/<int:id>', views.affiliate_beneficiary_relations),
     # # path('relations/affiliate_affiliate/<int:id>', viewss.affiliate_affiliate_relations),
