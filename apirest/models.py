@@ -51,6 +51,7 @@ class Record(me.Document):
     phone_personal = me.StringField(max_length=255)
     phone_optional = me.StringField(max_length=255)
     home_direction = me.StringField(max_length=255)
+    email = me.StringField(max_length=255)
 
     # datos medicos
     rh_group = me.StringField(max_length=255)
@@ -97,6 +98,7 @@ class Affiliate(Record):
     type = me.StringField(max_length=255, default='affiliate')
 
     #datos laborales
+    job_name = me.StringField(max_length=255)
     job_status = me.StringField(max_length=255, choices=job_status_options)
     job_title = me.StringField(max_length=255)
     job_direction = me.StringField(max_length=255)
@@ -123,9 +125,11 @@ class Affiliate(Record):
             'contact_info' : {
                 'phone_personal':self.phone_personal,
                 'phone_optional':self.phone_optional,
-                'home_direction':self.home_direction
+                'home_direction':self.home_direction,
+                'email' : self.email
             } ,
             'job_info' : {
+                'job_name' : self.job_name,
                 'job_status':self.job_status,
                 'job_title':self.job_title,
                 'job_direction':self.job_direction

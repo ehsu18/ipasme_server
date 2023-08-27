@@ -93,7 +93,6 @@ def affiliate(request, id=None):
 
     elif request.method == 'POST':
         try:
-            # TODO adaptar a la nueva api
             aff = models.Affiliate(**JSONParser().parse(request))
             aff.save()
             return JsonResponse({'result': 'ok'})
