@@ -97,8 +97,11 @@ def affiliate(request, id=None):
             aff.save()
             return JsonResponse({'result': 'ok'})
 
+        except (NotUniqueError):
+            return JsonResponse({'error': 'Document already exists'}, status=400)
+
         except (TypeError, ParseError,
-                IntegrityError, NotUniqueError) as e:
+                IntegrityError) as e:
             return JsonResponse({'error': str(e)}, status=400)
 
         except Exception as e:
@@ -108,6 +111,7 @@ def affiliate(request, id=None):
 
     elif request.method == 'DELETE' and id:
         try:
+            # TODO falta algun tipo de validacion o no se
             aff = models.Affiliate.objects.filter(id=ObjectId(id))
             aff.delete()
             return JsonResponse({'result': 'ok'})

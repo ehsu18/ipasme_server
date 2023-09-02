@@ -60,6 +60,12 @@ class Record(me.Document):
     alergias = me.StringField(max_length=255)
     # es abstract por lo de los index pero hay que ver si se puede cambiar
 
+    # datos odontologicos
+    odon_folder = me.StringField()
+    odon_padecimientos = me.StringField()
+    odon_procedimientos = me.StringField()
+
+
     meta = {'abstract': True}
 
     # meta data
@@ -140,6 +146,11 @@ class Affiliate(Record):
                 'enfermedades_cronicas':self.enfermedades_cronicas,
                 'alergias':self.alergias
             } ,
+            "odon_info" : {
+                "odon_folder" : self.odon_folder,
+                "odon_padecimientos" : self.odon_padecimientos,
+                "odon_procedimientos" : self.odon_procedimientos
+            }
             # hacer esto con beneficiarys"reposos" : [x.get_json() for x in self.reposos]
         # TODO integrar beneficiarys aqui (al menos los id)
         # TODO hacer lo mismo para beneficiarys
@@ -186,7 +197,7 @@ class Reposo(me.Document):
 
 class Cita(me.Document):
     #TODO fecha
-    record_id = me.StringField()
+    record_id = me.ReferenceField(Affiliate, reverse_delete_rule=me.CASCADE) #TODO no se si debe ser mas bien a Record
     age = me.IntField()
     area = me.StringField()
     fecha = me.DateTimeField(default=None)
@@ -222,7 +233,7 @@ class Cita(me.Document):
 
 class Citaodon(me.Document):
     #TODO fecha
-    record_id = me.StringField() # TODO hacerlo con reference field
+    record_id = me.ReferenceField(Affiliate, reverse_delete_rule=me.CASCADE) #TODO no se si debe ser mas bien a Record
     age = me.IntField()
     fecha = me.DateTimeField(default=None)
     record_type = me.StringField()
