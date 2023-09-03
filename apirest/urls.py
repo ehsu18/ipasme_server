@@ -2,25 +2,20 @@ from django.urls import path, register_converter
 from . import views
 
 urlpatterns = [    
-    path('affiliate', views.affiliate), 
-    path('affiliate/<str:id>', views.affiliate),
-    path('affiliate_affiliates/<str:id>', views.affiliate_affiliates),
-    path('affiliate_beneficiarys/<str:id>', views.affiliate_beneficiarys),
-
-    path('beneficiary', views.beneficiary),
-    path('beneficiary/<str:id>', views.beneficiary),
-    path('beneficiary_affiliates/<str:id>', views.beneficiary_affiliates),
+    path('record', views.record), 
+    path('record/<str:id>', views.record),
+    path('record_affiliates/<str:affiliate_id>', views.record_affiliates),
+    path('record_beneficiarys/<str:affiliate_id>', views.record_beneficiarys),
+    path('create_affiliate', views.create_affiliate), 
+    path('create_beneficiary', views.create_beneficiary),
 
     path('citas/<str:record_id>', views.citas),
     path('citasodon/<str:record_id>', views.citasodon),
+
     path("reposos", views.reposos),
     path("reposos/<str:id>", views.reposos),
-    path("affiliate_reposos/<str:record_id>", views.affiliate_reposos),
+    path("search_reposos/<str:record_id>", views.search_reposos),
+    path("cuidos", views.cuidos),
     path("cuidos/<str:id>", views.cuidos),
-    path("affiliate_cuidos/<str:record_id>", views.affiliate_cuidos),
-    # path('relations/affiliate_beneficiary', views.affiliate_beneficiary_relations),
-    # path('relations/affiliate_beneficiary/<int:id>', views.affiliate_beneficiary_relations),
-    # # path('relations/affiliate_affiliate/<int:id>', viewss.affiliate_affiliate_relations),
-    # TODO crear records
-    path('records/<str:id>', views.records)
+    path("search_cuidos/<str:record_id>", views.search_cuidos),
 ]

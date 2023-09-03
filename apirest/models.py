@@ -23,29 +23,35 @@ class Relation(me.EmbeddedDocument):
         4: 'padre/madre',
         5: 'hermano/hermana'
     }
-    level = me.IntField(min_value=1, max_value=5, choices=level_choices.keys())
+    level = me.IntField(min_value=1, max_value=5, choices=level_choices.items())
     record = me.ObjectIdField(required=True)
+
+    def get_json(self):
+        return {
+            "level_code": self.level,
+            "level_description" : self.get_level_display(),
+            "record" : str(self.record)
+        }
 
 
 class Record(me.Document):
-    '''This is a base model for all records, containing
-    fields that are used in affiliate and beneficiary'''
-    # TODO implementar un auto serialize/json
-    # creo que no es necesario poner id
-    # id = me.IntField(primary_key=True, unique=True, )
+   
+    gender_options = (('M', 'masculino'), ('F','femenino'))
     nationality_options = (('V','Venezolano'), ('E', 'Extranjero'))
     civilstatus_options = ('Soltero', 'Casado', 'Viudo', 'Divorciado')
-    gender_options = (('M', 'masculino'), ('F','femenino'))
+    job_status_options = ('Activo', 'Reposo', 'Jubilado', 'Inactivo') # TODO revisar cuales hay
+    type_options = ('affiliate', 'beneficiary')
 
+    type = me.StringField(max_length=255, choices=type_options)  
 
+    document = me.IntField(required=True, unique=True)
     names = me.StringField(max_length=255)
     lastnames = me.StringField(max_length=255)
     gender = me.StringField(max_length=255, choices=gender_options)
     nationality = me.StringField(max_length=255, choices=nationality_options)
-    dateofbirth = me.DateTimeField(default=None) # TODO convertir a fecha el la API
+    dateofbirth = me.DateTimeField(default=None) 
     civilstatus = me.StringField(max_length=255, choices=civilstatus_options)
     placeofbirth = me.StringField(max_length=255)
-    # personaldata_last_mod_date = me.DateField(default=datetime.datetime.utcnow)
 
     # datos de contacto
     phone_personal = me.StringField(max_length=255)
@@ -65,26 +71,17 @@ class Record(me.Document):
     odon_padecimientos = me.StringField()
     odon_procedimientos = me.StringField()
 
+    #datos laborales
+    job_name = me.StringField(max_length=255)
+    job_status = me.StringField(max_length=255, choices=job_status_options)
+    job_title = me.StringField(max_length=255)
+    job_direction = me.StringField(max_length=255)
 
-    meta = {'abstract': True}
+    beneficiarys = me.EmbeddedDocumentListField(Relation)
+    # Beneficiary, through="AffiliateToBeneficiary")
+    # TODO al eliminar un afiliado no se debe borrar sus beneficiarios sino
+    # revisar si no tienen mas afiliados, en ese caso borrar.
 
-    # meta data
-    # class Meta:
-    #     abstract = True
-
-    @property
-    def nationality_display(self):
-        return self.nationality_options[self.nationality]
-
-
-class Beneficiary(Record):
-    # hay que validar document como unique pero que ignore null
-    # https://www.mongodb.com/community/forums/t/cant-create-a-unique-index-that-ignores-nulls-in-mongodb/199145/6
-    # respuesta! -> https://stackoverflow.com/questions/7955040/mongodb-mongoose-unique-if-not-null
-    # mientras, hay que filtrarlo en vista
-    document = me.IntField()
-    type = me.StringField(max_length=255, default='beneficiary')
-    # TODO no va a tener affiliate pero se debe comprobar en view si tiene afiliado o no antes de editar
     meta = {
         "indexes": [
             {
@@ -95,24 +92,10 @@ class Beneficiary(Record):
         ]
     }
 
-class Affiliate(Record):
-    # hereda id y todo eso de Record
-    # TODO ordenar todo para que sea mas legible
-    job_status_options = ('Activo', 'Reposo', 'Jubilado', 'Inactivo') # TODO revisar cuales hay
-
-    document = me.IntField(required=True, unique=True)
-    type = me.StringField(max_length=255, default='affiliate')
-
-    #datos laborales
-    job_name = me.StringField(max_length=255)
-    job_status = me.StringField(max_length=255, choices=job_status_options)
-    job_title = me.StringField(max_length=255)
-    job_direction = me.StringField(max_length=255)
-
-    beneficiarys = me.EmbeddedDocumentListField(Relation)
-    # Beneficiary, through="AffiliateToBeneficiary")
-
-
+    @property
+    def nationality_display(self):
+        return self.nationality_options[self.nationality]
+    
     def get_json(self):
         return {
             
@@ -124,7 +107,7 @@ class Affiliate(Record):
                 'lastnames' : self.lastnames,
                 'gender' : self.gender,
                 'nationality' : self.nationality, 
-                'dateofbirth' : self.dateofbirth, #TODO convertir a iso
+                'dateofbirth' : self.dateofbirth, 
                 'civilstatus' : self.civilstatus,
                 'placeofbirth' : self.placeofbirth
             } ,
@@ -150,25 +133,14 @@ class Affiliate(Record):
                 "odon_folder" : self.odon_folder,
                 "odon_padecimientos" : self.odon_padecimientos,
                 "odon_procedimientos" : self.odon_procedimientos
-            }
-            # hacer esto con beneficiarys"reposos" : [x.get_json() for x in self.reposos]
-        # TODO integrar beneficiarys aqui (al menos los id)
-        # TODO hacer lo mismo para beneficiarys
-            
+            } 
+            #"beneficiarys" : [r.get_json() for r in self.beneficiarys] 
         }
-    
-    meta = {
-        "indexes": [
-            {
-                'fields': ['document'],
-                'unique': True
-            }
-        ]
-    }
+
 
 class Reposo(me.Document):
     
-    record_id = me.ReferenceField(Affiliate, reverse_delete_rule=me.CASCADE) #TODO no se si debe ser mas bien a Record
+    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
     fecha_inicio = me.DateTimeField(default=None)
     fecha_fin = me.DateTimeField(default=None)
     dias = me.IntField()
@@ -196,8 +168,8 @@ class Reposo(me.Document):
     
 
 class Cita(me.Document):
-    #TODO fecha
-    record_id = me.ReferenceField(Affiliate, reverse_delete_rule=me.CASCADE) #TODO no se si debe ser mas bien a Record
+
+    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
     age = me.IntField()
     area = me.StringField()
     fecha = me.DateTimeField(default=None)
@@ -232,8 +204,7 @@ class Cita(me.Document):
             }
 
 class Citaodon(me.Document):
-    #TODO fecha
-    record_id = me.ReferenceField(Affiliate, reverse_delete_rule=me.CASCADE) #TODO no se si debe ser mas bien a Record
+    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
     age = me.IntField()
     fecha = me.DateTimeField(default=None)
     record_type = me.StringField()
@@ -257,7 +228,7 @@ class Citaodon(me.Document):
 
 class Cuido(me.Document):
     
-    record_id = me.ReferenceField(Affiliate, reverse_delete_rule=me.CASCADE) #TODO no se si debe ser mas bien a Record
+    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE)
     fecha_inicio = me.DateTimeField(default=None)
     fecha_fin = me.DateTimeField(default=None)
     dias = me.IntField()

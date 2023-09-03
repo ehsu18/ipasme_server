@@ -17,50 +17,23 @@ from collections.abc import MutableMapping
 
 # TODO va a tocar que la api permita elegir cuales fields quiere que se envien, que el frontend pueda pedirlos 
 
-
-'''
-TODO
-se podria intentar cambiar la forma en que se envian los datos en la api
-puede ser:
-
-document
-basic_info {
-    name    
-    lastname
-    fecha nacimiento
-    estado civil
-    sexo
-}
-contact_info {
-    ta ta ta
-}
-beneficiarys {
-    ta ta ta
-}
-
-asi con todas las secciones para manejar mas comodamente la
-informacion y las fechas de actualizacion
-'''
-
-def affiliate(request, id=None):
+def record(request, id=None):
 
     if id and request.method == 'GET':
         try:
-            record = models.Affiliate.objects.get(id=ObjectId(id))
+            record = models.Record.objects.get(id=ObjectId(id))
             return JsonResponse(record.get_json())
             
-        except (models.Affiliate.DoesNotExist,
+        except (models.Record.DoesNotExist,
                 InvalidId) as e:
             return JsonResponse({'error': str(e)}, status=404)
+        
         except Exception:
             raise
             return JsonResponse({'error': 'internal server error'}, status=500)
 
     elif request.method == 'GET':
-        lista = []
-        for record in models.Affiliate.objects.all():
-            lista.append(record.get_json())
-        # print(lista)
+        lista = [r.get_json() for r in models.Record.objects.all()]
         return JsonResponse(lista, safe=False)
 
     elif request.method == 'PUT' and id:
@@ -76,316 +49,214 @@ def affiliate(request, id=None):
                 else:
                     data[k]=v
 
-            aff = models.Affiliate.objects.get(id=ObjectId(id))
+            aff = models.Record.objects.get(id=ObjectId(id))
             aff.modify(**data)
             aff.save()            
             return JsonResponse({'result': 'ok'})
-
+        
         except (ParseError, FieldDoesNotExist,
-                models.Affiliate.DoesNotExist,
                 OperationError) as e:
-            raise
             return JsonResponse({'error': str(e)}, status=400)
+        
+        except (models.Record.DoesNotExist) as e:
+            return JsonResponse({'error': str(e)}, status=404)
 
         except Exception as e:
             raise
             return JsonResponse({'error': 'bad request'}, status=400)
 
     elif request.method == 'POST':
-        try:
-            aff = models.Affiliate(**JSONParser().parse(request))
-            aff.save()
-            return JsonResponse({'result': 'ok'})
-
-        except (NotUniqueError):
-            return JsonResponse({'error': 'Document already exists'}, status=400)
-
-        except (TypeError, ParseError,
-                IntegrityError) as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
-        except Exception as e:
-            # print(e)
-            raise
-            return JsonResponse({'error': 'bad request'}, status=400)
+        return JsonResponse({'error':'You can\'t add a record with this endpoint. You must use create_affiliate or create_beneficiary'}, status=400)
 
     elif request.method == 'DELETE' and id:
         try:
             # TODO falta algun tipo de validacion o no se
-            aff = models.Affiliate.objects.filter(id=ObjectId(id))
-            aff.delete()
+            # TODO cuando se borran los records hay que borrarlos de las listas de beneficiarys
+            del_record = models.Record.objects.filter(id=ObjectId(id))
+            del_record.delete()
             return JsonResponse({'result': 'ok'})
         except Exception as e:
-            print(e)
-            return JsonResponse({'error': 'Internal server error'}, status=500)
+            raise
 
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-def affiliate_affiliates(request, id=None):
-    if request.method == 'GET' and id:
+
+def record_affiliates(request, affiliate_id=None):
+    if request.method == 'GET' and affiliate_id:
         try:
-            this_affiliate = models.Affiliate.objects.get(id=ObjectId(id))
-            affiliates = []
+            record = models.Record.objects.get(id=ObjectId(affiliate_id))
+            result = []
 
             # busqueda de afiliados
-            all_affiliates = models.Affiliate.objects()
-            for affiliate in all_affiliates:
-                for beneficiary in affiliate.beneficiarys:
-                    if beneficiary.record == this_affiliate.id:
-                        affiliates.append({
-                            'level': beneficiary.level,
-                            'record': str(affiliate.id),
-                            'names': str(affiliate.names),
-                            'lastnames':str(affiliate.lastnames) ,
+            affiliates = models.Record.objects(type='affiliate')
+
+            for affiliate in affiliates:
+                for relation in affiliate.beneficiarys:
+                    if relation.record == record.id:
+                        result.append({
+                            'level_code': relation.level,
+                            'level_description':relation.get_level_display(),
+                            'record': affiliate.id,
+                            'names': affiliate.names,
+                            'lastnames':affiliate.lastnames,
                             'document': affiliate.document,
-                            'relation_description' : 'feaure coming soon',
+                            'nationality' : affiliate.nationality,
                             'type' : str(affiliate.type)
                         })
 
-            return JsonResponse(affiliates, safe=False)
-        except (models.Affiliate.DoesNotExist) as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse(result, safe=False)
+        
+        except (models.Record.DoesNotExist) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        
         except Exception as e:
-            print(e)
-            return JsonResponse({'error': 'Internal server error'})
-
-    elif not id:  # bad request
-        return JsonResponse({'error': 'bad request, id expected, must be id > 0'}, status=400)
+            raise
 
     else:  # bad request
         return JsonResponse({'error': 'bad request'}, status=400)
 
-def affiliate_beneficiarys(request, id=None):
-    if request.method == 'POST' and id:
+def record_beneficiarys(request, affiliate_id=None):
+    if request.method == 'POST' and affiliate_id:
         try:
-            dicc = JSONParser().parse(request)
-            this_affiliate = models.Affiliate.objects.get(id=ObjectId(id))
+            json = JSONParser().parse(request)
+
+            try:
+                affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
+                if affiliate.type != 'affiliate': return JsonResponse({'error': 'affiliate_id is not an affiliate'}, status=400)
+            except models.Record.DoesNotExist as e :
+                return JsonResponse({'error': str(e)}, status=400)
             
-            # checking
-            for beneficiary in this_affiliate.beneficiarys:
-                if str(beneficiary.record) == dicc['record']:
-                    return JsonResponse({'error': 'already_exists, try with PUT to edit.'}, status=400)
+            try:
+                beneficiary = models.Record.objects.get(id=ObjectId(json['record']))
+            except models.Record.DoesNotExist as e :
+                return JsonResponse({'error': str(e)}, status=400)
+            
+
+            # checking if relation exist
+            if [r for r in affiliate.beneficiarys if r.record == beneficiary.record]:
+                return JsonResponse({'error': 'relation already_exists, try with PUT to edit.'}, status=400)
             
             # adding
-            beneficiary = models.Relation(level=dicc['level'], record=ObjectId(dicc['record']))
-            this_affiliate.beneficiarys.append(beneficiary)
-            this_affiliate.save()    
+            relation = models.Relation(level=json['level'], record=beneficiary.id)
+            affiliate.beneficiarys.append(relation)
+            affiliate.save()    
             return JsonResponse({'result': 'ok'}, safe=False)
-        except (models.Affiliate.DoesNotExist) as e:
+
+        except (TypeError, ParseError, IntegrityError) as e:
             return JsonResponse({'error': str(e)}, status=400)
+        
         except Exception as e:
-            print(e)
-            return JsonResponse({'error': 'Internal server error'}, status=500)
+            raise
     
-    elif request.method == 'GET' and id:
+    elif request.method == 'GET' and affiliate_id:
 
         try:
-            this_affiliate = models.Affiliate.objects.get(id=ObjectId(id))
-            beneficiarys = []
+            affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
+            if affiliate.type != 'affiliate': return JsonResponse({'error': 'affiliate_id is not an affiliate'}, status=400)
 
-            for relation in this_affiliate.beneficiarys:
-                print(relation.record)
-                try:
-                    ben = models.Beneficiary.objects.get(id=ObjectId(relation.record))
-                except Exception:
-                    ben = models.Affiliate.objects.get(id=ObjectId(relation.record))
-                
-                beneficiarys.append({
-                    'level': relation.level,
-                    'record': str(relation.record),
-                    'names': str(ben.names),
-                    'lastnames':str(ben.lastnames) ,
+            relations = [r.get_json() for r in affiliate.beneficiarys]
+            for r in relations:
+                ben = models.Record.objects.get(id=r.id)
+                r.update({
+                    'names': ben.names,
+                    'lastnames':ben.lastnames,
                     'document': ben.document,
-                    'relation_description' : 'feaure coming soon',
-                    'type' : str(ben.type)
+                    'type' : ben.type
                 })
 
-            return JsonResponse(beneficiarys, safe=False)
-        except (models.Affiliate.DoesNotExist) as e:
-            return JsonResponse({'error': str(e)}, status=400)
-        except Exception as e:
-            print(e)
-            return JsonResponse({'error': 'Internal server error'})    
-    
-    elif request.method == 'DELETE' and id:
-        try:
-            dicc = JSONParser().parse(request)
-            this_affiliate = models.Affiliate.objects.get(id=ObjectId(id))
-
-            # checking
-            for beneficiary in this_affiliate.beneficiarys:
-                if str(beneficiary.record) == dicc['record_to_delete']:
-                    this_affiliate.beneficiarys.remove(beneficiary)
-                    this_affiliate.save()
-                    return JsonResponse({'result':'ok'})
-
-            return JsonResponse({'error': 'that beneficiary is not in the beneficiarys list of this affiliate'}, status=400) 
-        
-        except (models.Affiliate.DoesNotExist) as e:
-            return JsonResponse({'error': str(e)}, status=400)
-        except Exception as e:
-            print(e)
-            return JsonResponse({'error': 'Internal server error'})    
-
-    elif request.method == 'PUT' and id:
-        try:
-            dicc = JSONParser().parse(request)
-            this_affiliate = models.Affiliate.objects.get(id=ObjectId(id))
-
-            # checking
-            for beneficiary in this_affiliate.beneficiarys:
-                if str(beneficiary.record) == dicc['record']:
-                    
-                    beneficiary.level = dicc['level']
-
-                    this_affiliate.save()
-                    return JsonResponse({'result':'ok'})
-
-            return JsonResponse({'error': 'that beneficiary is not in the beneficiarys list of this affiliate'}, status=400) 
-        
-        except (models.Affiliate.DoesNotExist) as e:
-            return JsonResponse({'error': str(e)}, status=400)
-        except Exception as e:
-            print(e)
-            return JsonResponse({'error': 'Internal server error'}) 
-
-    elif not id:  # bad request
-        return JsonResponse({'error': 'bad request, id expected, must be id > 0'}, status=400)
-
-    else:  # bad request
-        return JsonResponse({'error': 'bad request'}, status=400)
-
-def beneficiary(request, id=None):
-
-    if id and request.method == 'GET':
-        try:
-            record = models.Beneficiary.objects.get(id=ObjectId(id))
-            return JsonResponse({
-                'id': str(record.id),
-                'names': record.names,
-                'gender': record.gender,
-                'lastnames': record.lastnames,
-                'document': record.document,
-                'type': 'beneficiary',
-            })
-        except models.Beneficiary.DoesNotExist:
-            return JsonResponse({'error': 'not exists'}, status=404)
-        except Exception as e:
-            raise
-            return JsonResponse({'error': 'internal server error'}, status=500)
-
-    elif request.method == 'GET':
-        lista = []
-        for record in models.Beneficiary.objects.all():
-            lista.append({
-                'id': str(record.id),
-                'names': record.names,
-                'gender': record.gender,
-                'lastnames': record.lastnames,
-                'document': record.document,
-                'type': 'beneficiary',
-            })
-        return JsonResponse(lista, safe=False)
-
-    elif request.method == 'PUT' and id:
-        try:
-            dicc = JSONParser().parse(request)
-            ben = models.Beneficiary.objects.get(id=ObjectId(id))
-            ben.modify(**dicc)
-            ben.save()
-            return JsonResponse({'result': 'ok'})
-        except FieldDoesNotExist as e:
-            return JsonResponse({'error': str(e)}, status=400)
-        except:
-            raise
-            return JsonResponse({'error': 'bad request'}, status=400)
-
-    elif request.method == 'POST':
-        try:
-            dicc = JSONParser().parse(request)
-
-            doc = dicc.get('document', None)
-            print(doc)
-            if doc != None and models.Beneficiary.objects.filter(document=doc):
-                raise NotUniqueError(f'No puede repetir el documento {doc}')
-
-            # TODO validar document o pasarlo sin document para mantener sparse
-            b = models.Beneficiary(**dicc)
-            b.save()
-            return JsonResponse({'result': 'ok'})
-        except (TypeError, ParseError,
-                IntegrityError, NotUniqueError,
-                FieldDoesNotExist) as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
-        except Exception as e:
-            raise
-            return JsonResponse({'error': 'bad request'}, status=400)
-
-    elif request.method == 'DELETE' and id:
-        try:
-            ben = models.Beneficiary.objects.filter(id=ObjectId(id))
-            if len(ben) < 1: 
-                return JsonResponse({'result': 'That beneficiary does not exists.'}, status=400)
-            ben.delete()
-            return JsonResponse({'result': 'ok'})
-        except Exception as e:
-            print(e)
-            return JsonResponse({'error': 'Internal server error'}, status=500)
-
-    else:
-        return JsonResponse({'error': 'bad request'}, status=400)
-
-def beneficiary_affiliates(request, id):
-    if request.method == 'GET' and id:
-        try:
-            this_beneficiary = models.Beneficiary.objects.get(id=ObjectId(id))
-            affiliates = []
-
-            # busqueda de afiliados
-            all_affiliates = models.Affiliate.objects()
-            for affiliate in all_affiliates:
-                for beneficiary in affiliate.beneficiarys:
-                    if beneficiary.record == this_beneficiary.id:
-                        affiliates.append({
-                            'level': beneficiary.level,
-                            'record': str(affiliate.id)
-                        })
-
-            return JsonResponse(affiliates, safe=False)
-        except (models.Beneficiary.DoesNotExist) as e:
-            return JsonResponse({'error': str(e)}, status=400)
-        except Exception as e:
-            print(e)
-            return JsonResponse({'error': 'Internal server error'})
-
-    elif not id:  # bad request
-        return JsonResponse({'error': 'bad request, id expected, must be id > 0'}, status=400)
-
-    else:  # bad request
-        return JsonResponse({'error': 'bad request'}, status=400)
-
-def records(request, id=None):
-
-    if id and request.method == 'GET':
-        try:
-            aff = affiliate(request, id)
-            print(aff)
-            return aff
-            # if aff...
-        except (models.Affiliate.DoesNotExist,
-                models.Beneficiary.DoesNotExist,
-                InvalidId) as e:
+            return JsonResponse(relations, safe=False)
+        except (models.Record.DoesNotExist) as e:
             return JsonResponse({'error': str(e)}, status=404)
         except Exception as e:
-            raise
-            return JsonResponse({'error': 'internal server error'}, status=500)
+            raise   
     
-    # elif ...
-    
-    else:
+    elif request.method == 'DELETE' and affiliate_id:
+        try:
+            json = JSONParser().parse(request)
+            affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
+            if affiliate.type != 'affiliate': return JsonResponse({'error': 'affiliate_id is not an affiliate'}, status=400)
+
+            # checking
+            relation = [r for r in affiliate.beneficiarys]
+            if relation:
+                affiliate.beneficiarys.remove(relation[0])
+                affiliate.save()
+                return JsonResponse({'result':'ok'})
+            else:
+                return JsonResponse({'error': 'that beneficiary is not in the beneficiarys list of this affiliate'}, status=404) 
+        
+        except (models.Record.DoesNotExist) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception as e:
+            raise   
+
+    elif request.method == 'PUT' and affiliate_id:
+        try:
+            json = JSONParser().parse(request)
+            affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
+
+            # checking
+            for relation in affiliate.beneficiarys:
+                if str(relation.record) == json['record']:
+                    
+                    relation.level = json['level']
+
+                    affiliate.save()
+                    return JsonResponse({'result':'ok'})
+
+            return JsonResponse({'error': 'that beneficiary is not in the beneficiarys list of this affiliate'}, status=404) 
+        
+        except (models.Relation.DoesNotExist) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception as e:
+            raise 
+
+    else:  # bad request
         return JsonResponse({'error': 'bad request'}, status=400)
+
+def create_affiliate(request):
+    try:
+        new_record = models.Record(**JSONParser().parse(request), type='affiliate')
+        #TODO ceudla
+        new_record.save()
+        return JsonResponse({'result': 'ok'})
+
+    except (NotUniqueError):
+        return JsonResponse({'error': 'Document already exists'}, status=400)
+
+    except (TypeError, ParseError,
+            IntegrityError) as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    except Exception as e:
+        raise
+
+def create_beneficiary(request, affiliate_id=None):
+    try:
+        aff = models.Record.objects.get(id=ObjectId(affiliate_id))
+        if aff.type != 'affiliate': return JsonResponse({'error': 'affiliate_id is not an affiliate'}, status=400)
+
+        new_record = models.Record(**JSONParser().parse(request)['record_data'], type='benficiary')
+        new_record.save()
+        rel = models.Relation(level=int(JSONParser().parse(request)['relation_data']['level']),
+                              record=new_record.id)
+        aff.beneficiarys.append(rel)
+        aff.save()    
+
+    except (models.Record.DoesNotExist) as e:
+        return JsonResponse({'error': 'affiliate does not exist'}, status=400)
+
+    except (NotUniqueError):
+        return JsonResponse({'error': 'Document already exists'}, status=400)
+
+    except (TypeError, ParseError,
+            IntegrityError) as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    except Exception as e:
+        raise
+
 
 def citas(request, record_id=None):
     if id and request.method == 'GET':
@@ -432,21 +303,14 @@ def citasodon(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-def affiliate_reposos(request, record_id=None):
+
+def search_reposos(request, record_id=None):
     if record_id and request.method == 'GET':
         try:
             return JsonResponse([x.get_json() for x in models.Reposo.objects(record_id=ObjectId(record_id))], safe=False)
-            
-        except (models.Reposo.DoesNotExist,
-                InvalidId) as e:
-            return JsonResponse({'error': str(e)}, status=404)
         except Exception:
             raise
-            return JsonResponse({'error': 'internal server error'}, status=500)
 
-    elif request.method == 'GET':
-
-        return JsonResponse({'error': 'bad request'}, status=400)
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
@@ -517,21 +381,13 @@ def reposos(request, id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-def affiliate_cuidos(request, record_id=None):
+def search_cuidos(request, record_id=None):
     if record_id and request.method == 'GET':
         try:
             return JsonResponse([x.get_json() for x in models.Cuido.objects(record_id=ObjectId(record_id))], safe=False)
-            
-        except (models.Cuido.DoesNotExist,
-                InvalidId) as e:
-            return JsonResponse({'error': str(e)}, status=404)
         except Exception:
             raise
-            return JsonResponse({'error': 'internal server error'}, status=500)
 
-    elif request.method == 'GET':
-
-        return JsonResponse({'error': 'bad request'}, status=400)
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
