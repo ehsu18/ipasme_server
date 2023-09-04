@@ -97,7 +97,7 @@ def record_affiliates(request, affiliate_id=None):
                         result.append({
                             'level_code': relation.level,
                             'level_description':relation.get_level_display(),
-                            'record': affiliate.id,
+                            'record': str(affiliate.id),
                             'names': affiliate.names,
                             'lastnames':affiliate.lastnames,
                             'document': affiliate.document,
@@ -153,16 +153,17 @@ def record_beneficiarys(request, affiliate_id=None):
 
         try:
             affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
-            if affiliate.type != 'affiliate': return JsonResponse({'error': 'affiliate_id is not an affiliate'}, status=400)
+            if affiliate.type != 'affiliate': return JsonResponse([], safe=False) # si no es afiliado no tiene beneficiarios
 
             relations = [r.get_json() for r in affiliate.beneficiarys]
             for r in relations:
-                ben = models.Record.objects.get(id=r.id)
+                ben = models.Record.objects.get(id=r['record'])
                 r.update({
                     'names': ben.names,
                     'lastnames':ben.lastnames,
                     'document': ben.document,
-                    'type' : ben.type
+                    'type' : ben.type,
+                    'record': str(r['record'])
                 })
 
             return JsonResponse(relations, safe=False)

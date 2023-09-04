@@ -16,14 +16,14 @@ import re
 
 
 class Relation(me.EmbeddedDocument):
-    level_choices = {
-        1: "indefinido",
-        2: 'cónyugue',
-        3: 'hijo/hija',
-        4: 'padre/madre',
-        5: 'hermano/hermana'
-    }
-    level = me.IntField(min_value=1, max_value=5, choices=level_choices.items()) # TODO esto esta dando un error con get_level_display, parece que no puede ser items, probar keys o usar una lista o tupla-> TypeError: 'dict_items' object is not subscriptable 
+    level_choices = (
+        (1, "indefinido"),
+        (2, 'cónyugue'),
+        (3, 'hijo/hija'),
+        (4, 'padre/madre'),
+        (5, 'hermano/hermana')
+    )
+    level = me.IntField(min_value=1, max_value=5, choices=level_choices) # TODO esto esta dando un error con get_level_display, parece que no puede ser items, probar keys o usar una lista o tupla-> TypeError: 'dict_items' object is not subscriptable 
     record = me.ObjectIdField(required=True)
 
     def get_json(self):
@@ -40,6 +40,8 @@ def document_validator(document):
 
 class Record(me.Document):
    
+    # TODO como se puede evitar duplicar la historia de alguien sin cedula?
+
     gender_options = (('M', 'masculino'), ('F','femenino'))
     nationality_options = (('V','Venezolano'), ('E', 'Extranjero'))
     civilstatus_options = ('Soltero', 'Casado', 'Viudo', 'Divorciado')
