@@ -120,7 +120,7 @@ def record_beneficiarys(request, affiliate_id=None):
     if request.method == 'POST' and affiliate_id:
         try:
             json = JSONParser().parse(request)
-
+            # TODO si es beneficiary no va a tener beneficiarios
             try:
                 affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
                 if affiliate.type != 'affiliate': return JsonResponse({'error': 'affiliate_id is not an affiliate'}, status=400)
@@ -236,27 +236,48 @@ def create_beneficiary(request, affiliate_id=None):
     try:
         aff = models.Record.objects.get(id=ObjectId(affiliate_id))
         if aff.type != 'affiliate': return JsonResponse({'error': 'affiliate_id is not an affiliate'}, status=400)
+        json = JSONParser().parse(request) # TODO revisar si el parse no se repite tambien en otros lados
 
-        new_record = models.Record(**JSONParser().parse(request)['record_data'], type='benficiary')
-        new_record.save()
-        rel = models.Relation(level=int(JSONParser().parse(request)['relation_data']['level']),
+        new_record = models.Record(**json['record_data'], type='beneficiary')
+        new_record.save() # TODO probar a poner esto de ultimo para evitar guardar si hubo un fallo, sino no importa
+        rel = models.Relation(level=int(json['relation_data']['level']),
                               record=new_record.id)
         aff.beneficiarys.append(rel)
         aff.save()    
+        return JsonResponse({'result': 'ok'})
 
     except (models.Record.DoesNotExist) as e:
+        print('affiliate does not exist')
         return JsonResponse({'error': 'affiliate does not exist'}, status=400)
 
     except (NotUniqueError):
+        print('Document already exists')
         return JsonResponse({'error': 'Document already exists'}, status=400)
 
     except (TypeError, ParseError,
             IntegrityError) as e:
+        print(e)
         return JsonResponse({'error': str(e)}, status=400)
 
     except Exception as e:
         raise
 
+def filter_affiliates(request, text=''):
+    if not text: return JsonResponse([], safe=False) 
+    try:
+        by_names = set(models.Record.objects(type='affiliate', names__contains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        by_document = set(models.Record.objects(type='affiliate', document__contains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        result = set(by_names | by_document)
+        
+        return JsonResponse([{
+            'names':x.names, 'lastnames':x.lastnames, 'id':str(x.id), 'document':x.document, 'nationality':x.nationality
+            } for x in result], safe=False)
+    # except (TypeError, ParseError,
+    #         IntegrityError) as e:
+    #     return JsonResponse({'error': str(e)}, status=400)
+
+    except Exception as e:
+        raise
 
 def citas(request, record_id=None):
     if id and request.method == 'GET':

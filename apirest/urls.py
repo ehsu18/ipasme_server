@@ -7,7 +7,10 @@ urlpatterns = [
     path('record_affiliates/<str:affiliate_id>', views.record_affiliates),
     path('record_beneficiarys/<str:affiliate_id>', views.record_beneficiarys),
     path('create_affiliate', views.create_affiliate), 
-    path('create_beneficiary', views.create_beneficiary),
+    path('create_beneficiary/<str:affiliate_id>', views.create_beneficiary),
+    path("filter_affiliates/<str:text>", views.filter_affiliates),
+    path("filter_affiliates", views.filter_affiliates),
+
 
     path('citas/<str:record_id>', views.citas),
     path('citasodon/<str:record_id>', views.citasodon),

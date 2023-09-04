@@ -1,8 +1,8 @@
 # from django.db import models
-# from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError
 
 import mongoengine as me
-import datetime
+import re
 
 
 # class User(models.Model):
@@ -23,7 +23,7 @@ class Relation(me.EmbeddedDocument):
         4: 'padre/madre',
         5: 'hermano/hermana'
     }
-    level = me.IntField(min_value=1, max_value=5, choices=level_choices.items())
+    level = me.IntField(min_value=1, max_value=5, choices=level_choices.items()) # TODO esto esta dando un error con get_level_display, parece que no puede ser items, probar keys o usar una lista o tupla-> TypeError: 'dict_items' object is not subscriptable 
     record = me.ObjectIdField(required=True)
 
     def get_json(self):
@@ -33,6 +33,10 @@ class Relation(me.EmbeddedDocument):
             "record" : str(self.record)
         }
 
+def document_validator(document):
+    regex = re.compile(r"^\d*$")
+    if not regex.match(document):
+        raise ValidationError("Not a valid document, must be a number or empty")
 
 class Record(me.Document):
    
@@ -44,7 +48,7 @@ class Record(me.Document):
 
     type = me.StringField(max_length=255, choices=type_options)  
 
-    document = me.IntField(required=True, unique=True)
+    document = me.StringField(required=True, unique=True, validation=document_validator)
     names = me.StringField(max_length=255)
     lastnames = me.StringField(max_length=255)
     gender = me.StringField(max_length=255, choices=gender_options)
