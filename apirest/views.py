@@ -155,17 +155,30 @@ def record_beneficiarys(request, affiliate_id=None):
             affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
             if affiliate.type != 'affiliate': return JsonResponse([], safe=False) # si no es afiliado no tiene beneficiarios
 
-            relations = [r.get_json() for r in affiliate.beneficiarys]
-            for r in relations:
-                ben = models.Record.objects.get(id=r['record'])
-                r.update({
-                    'names': ben.names,
-                    'lastnames':ben.lastnames,
-                    'document': ben.document,
-                    'type' : ben.type,
-                    'record': str(r['record'])
-                })
+            relations = []
+            for r in affiliate.beneficiarys:
+                try:
+                    ben = models.Record.objects.get(id=r.record) # TODO tengo un error porque al no borrarse los beneficiarios de la lista este lanza un 404 porque no existe el beneficiario
+                    relations.append({
+                        'names': ben.names,
+                        'lastnames':ben.lastnames,
+                        'document': ben.document,
+                        'type' : ben.type,
+                        'record': str(r.record),
+                        'level_code': r.level,
+                        'level_description':r.get_level_display()
+                    })
+                
+                    # aqui viene cuando no existe el beneficiario al que se hace referencia, se deberia borrar aqui mismo de la lista
+                    # AUTO PURGUE
+                except models.Record.DoesNotExist as e:
+                    affiliate.beneficiarys.remove(r)
+                    affiliate.save()
+                    print(e)
+                except Exception as e:
+                    print(e)
 
+                    
             return JsonResponse(relations, safe=False)
         except (models.Record.DoesNotExist) as e:
             return JsonResponse({'error': str(e)}, status=404)
