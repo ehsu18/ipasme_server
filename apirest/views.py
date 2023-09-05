@@ -212,6 +212,7 @@ def record_beneficiarys(request, affiliate_id=None):
     elif request.method == 'PUT' and affiliate_id:
         try:
             json = JSONParser().parse(request)
+            print(json)
             affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
 
             # checking
@@ -225,7 +226,7 @@ def record_beneficiarys(request, affiliate_id=None):
 
             return JsonResponse({'error': 'that beneficiary is not in the beneficiarys list of this affiliate'}, status=404) 
         
-        except (models.Relation.DoesNotExist) as e:
+        except models.Record.DoesNotExist as e:
             return JsonResponse({'error': str(e)}, status=404)
         except Exception as e:
             raise 
