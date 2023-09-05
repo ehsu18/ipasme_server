@@ -10,6 +10,8 @@ urlpatterns = [
     path('create_beneficiary/<str:affiliate_id>', views.create_beneficiary),
     path("filter_affiliates/<str:text>", views.filter_affiliates),
     path("filter_affiliates", views.filter_affiliates),
+    path("filter_records/<str:text>", views.filter_records),
+    path("filter_records", views.filter_records),
 
 
     path('citas/<str:record_id>', views.citas),

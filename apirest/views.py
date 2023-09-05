@@ -134,7 +134,7 @@ def record_beneficiarys(request, affiliate_id=None):
             
 
             # checking if relation exist
-            if [r for r in affiliate.beneficiarys if r.record == beneficiary.record]:
+            if [r for r in affiliate.beneficiarys if r.record == beneficiary.id]:
                 return JsonResponse({'error': 'relation already_exists, try with PUT to edit.'}, status=400)
             
             # adding
@@ -297,6 +297,24 @@ def filter_affiliates(request, text=''):
 
     except Exception as e:
         raise
+
+def filter_records(request, text=''):
+    if not text: return JsonResponse([], safe=False) 
+    try:
+        by_names = set(models.Record.objects(names__contains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        by_document = set(models.Record.objects(document__contains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        result = set(by_names | by_document)
+        print(result)
+        return JsonResponse([{
+            'names':x.names, 'lastnames':x.lastnames, 'id':str(x.id), 'document':x.document, 'nationality':x.nationality
+            } for x in result], safe=False)
+    # except (TypeError, ParseError,
+    #         IntegrityError) as e:
+    #     return JsonResponse({'error': str(e)}, status=400)
+
+    except Exception as e:
+        raise
+
 
 def citas(request, record_id=None):
     if id and request.method == 'GET':
