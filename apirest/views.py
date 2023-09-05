@@ -158,15 +158,19 @@ def record_beneficiarys(request, affiliate_id=None):
             relations = []
             for r in affiliate.beneficiarys:
                 try:
-                    ben = models.Record.objects.get(id=r.record) # TODO tengo un error porque al no borrarse los beneficiarios de la lista este lanza un 404 porque no existe el beneficiario
-                    relations.append({
+                    ben = models.Record.objects.get(id=r.record) 
+                    relations.append({ #TODO se podria mejorar este json, pero habria que cambiar el frontend
                         'names': ben.names,
                         'lastnames':ben.lastnames,
                         'document': ben.document,
                         'type' : ben.type,
                         'record': str(r.record),
                         'level_code': r.level,
-                        'level_description':r.get_level_display()
+                        'level_description':r.get_level_display(),
+                        'dateofbirth':ben.dateofbirth,
+                        'id':str(ben.id),
+                        'nationality':ben.nationality,
+
                     })
                 
                     # aqui viene cuando no existe el beneficiario al que se hace referencia, se deberia borrar aqui mismo de la lista
