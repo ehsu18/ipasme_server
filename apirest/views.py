@@ -192,20 +192,25 @@ def record_beneficiarys(request, affiliate_id=None):
     elif request.method == 'DELETE' and affiliate_id:
         try:
             json = JSONParser().parse(request)
+            print(json)
+
+            if models.Record.objects(beneficiarys__record=json['beneficiary']).count() <= 1:
+                return JsonResponse({'error': 'unique affiliate'})
+
             affiliate = models.Record.objects.get(id=ObjectId(affiliate_id))
             if affiliate.type != 'affiliate': return JsonResponse({'error': 'affiliate_id is not an affiliate'}, status=400)
 
             # checking
-            relation = [r for r in affiliate.beneficiarys]
+            relation = affiliate.beneficiarys.get(record = json['beneficiary'])
             if relation:
-                affiliate.beneficiarys.remove(relation[0])
+                affiliate.beneficiarys.remove(relation)
                 affiliate.save()
                 return JsonResponse({'result':'ok'})
             else:
-                return JsonResponse({'error': 'that beneficiary is not in the beneficiarys list of this affiliate'}, status=404) 
+                return JsonResponse({'error': 'not in the beneficiarys list'}, status=404) 
         
         except (models.Record.DoesNotExist) as e:
-            return JsonResponse({'error': str(e)}, status=404)
+            return JsonResponse({'error': 'does not exist'}, status=404)
         except Exception as e:
             raise   
 
