@@ -338,7 +338,14 @@ def citas(request, record_id=None):
             raise
             return JsonResponse({'error': 'internal server error'}, status=500)
     
-    # elif ...
+    elif request.method ==  'POST':
+        try:
+            json = JSONParser().parse(request)
+            cita = models.Cita(**json)
+            cita.save()
+            return JsonResponse({'result':'ok'})
+        except:
+            raise
     
     else:
         return JsonResponse({'error': 'bad request'}, status=400)

@@ -87,7 +87,7 @@ class Record(me.Document):
     # Beneficiary, through="AffiliateToBeneficiary")
     # TODO al eliminar un afiliado no se debe borrar sus beneficiarios sino
     # revisar si no tienen mas afiliados, en ese caso borrar.
-
+    # TODO creo que el numero deberia ser str y  permitir "+"
     meta = {
         "indexes": [
             {
@@ -176,7 +176,14 @@ class Reposo(me.Document):
 class Cita(me.Document):
 
     record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
-    age = me.IntField()
+    names=me.StringField()
+    lastnames = me.StringField()
+    age=me.IntField()
+    document=me.StringField()
+    phone=me.StringField()
+    gender=me.StringField()
+    tipo=me.StringField()
+    job_type = me.StringField()
     area = me.StringField()
     fecha = me.DateTimeField(default=None)
     record_type = me.StringField()
