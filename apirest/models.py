@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 
 import mongoengine as me
 import re
+from datetime import datetime
 
 
 # class User(models.Model):
@@ -185,7 +186,7 @@ class Cita(me.Document):
     tipo=me.StringField()
     job_type = me.StringField()
     area = me.StringField()
-    fecha = me.DateTimeField(default=None)
+    fecha = me.DateTimeField(default=datetime.utcnow())
     record_type = me.StringField()
     first_cita = me.BooleanField()
     tension_arterial = me.StringField()
