@@ -322,7 +322,7 @@ def filter_records(request, text=''):
 
 
 def record_citas(request, record_id=None):
-    if id and request.method == 'GET':
+    if record_id and request.method == 'GET':
         try:
             resultados = models.Cita.objects(record_id=record_id)
             print(resultados)
@@ -339,8 +339,9 @@ def record_citas(request, record_id=None):
             return JsonResponse({'error': 'internal server error'}, status=500)
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
+
 def citas(request, cita_id=None):
-    if request.method ==  'GET':
+    if request.method ==  'GET' and cita_id:
         try:
             cita = models.Cita.objects.get(id=ObjectId(cita_id))
             return JsonResponse(cita.get_json(), safe=False)
@@ -357,7 +358,7 @@ def citas(request, cita_id=None):
             return JsonResponse({'result':'ok'})
         except:
             raise
-    elif request.method ==  'PUT':
+    elif request.method ==  'PUT' and cita_id:
         try:
             cita = models.Cita.objects.get(id=ObjectId(cita_id))
             json = JSONParser().parse(request)
@@ -377,8 +378,8 @@ def citas(request, cita_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-def citasodon(request, record_id=None):
-    if id and request.method == 'GET':
+def record_citasodon(request, record_id=None):
+    if record_id and request.method == 'GET':
         try:
             resultados = models.Citaodon.objects(record_id=record_id)
             print(resultados)
@@ -387,15 +388,50 @@ def citasodon(request, record_id=None):
                 citas.append(cita.get_json())
             return JsonResponse(citas, safe=False)
             
-        except (models.CitaOdon.DoesNotExist,
+        except (models.Citaodon.DoesNotExist,
                 InvalidId) as e:
-            # TODO los errores DoesNotExist y eso deberian estar en un nivel superior, fuera del if y usando document.DoesNotExist
             return JsonResponse({'error': str(e)}, status=404)
         except Exception:
             raise
             return JsonResponse({'error': 'internal server error'}, status=500)
-    
-    # elif ...
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
+
+def citasodon(request, citaodon_id=None):
+    if request.method ==  'GET' and citaodon_id:
+        try:
+            citaodon = models.Citaodon.objects.get(id=ObjectId(citaodon_id))
+            return JsonResponse(citaodon.get_json(), safe=False)
+        except (models.Citaodon.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': 'Does not exist'}, status=404)
+        except:
+            raise
+    elif request.method ==  'POST':
+        try:
+            json = JSONParser().parse(request)
+            citaodon = models.Citaodon(**json)
+            citaodon.save()
+            return JsonResponse({'result':'ok'})
+        except:
+            raise
+    elif request.method ==  'PUT' and citaodon_id:
+        try:
+            citaodon = models.Citaodon.objects.get(id=ObjectId(citaodon_id))
+            json = JSONParser().parse(request)
+            print(json)
+            citaodon.modify(**json)
+            citaodon.save()
+            return JsonResponse({'result':'ok'})
+        except (models.Citaodon.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': 'Does not exist'}, status=404)
+        except (TypeError, ParseError,
+            IntegrityError) as e:
+            print(e)
+            return JsonResponse({'error': str(e)}, status=400)
+        except:
+            raise
     
     else:
         return JsonResponse({'error': 'bad request'}, status=400)

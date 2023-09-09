@@ -17,7 +17,9 @@ urlpatterns = [
     path('record_citas/<str:record_id>', views.record_citas),
     path('citas', views.citas),
     path('citas/<str:cita_id>', views.citas),
-    path('citasodon/<str:record_id>', views.citasodon),
+    path('record_citasodon/<str:record_id>', views.record_citasodon),
+    path('citasodon', views.citasodon),
+    path('citasodon/<str:citaodon_id>', views.citasodon),
 
     path("reposos", views.reposos),
     path("reposos/<str:id>", views.reposos),

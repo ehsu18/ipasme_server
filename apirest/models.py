@@ -183,7 +183,7 @@ class Cita(me.Document):
     document=me.StringField()
     phone=me.StringField()
     gender=me.StringField()
-    tipo=me.StringField()
+    # tipo=me.StringField()
     job_type = me.StringField()
     area = me.StringField()
     fecha = me.DateTimeField()
@@ -205,6 +205,8 @@ class Cita(me.Document):
             "area" : self.area,
             "fecha": self.fecha,
             "age": self.age,
+            "gender":self.gender,
+            "job_type" : self.job_type,
             "record_type": self.record_type,
             "first_cita": self.first_cita,
             "tension_arterial": self.tension_arterial,
@@ -219,8 +221,15 @@ class Cita(me.Document):
 
 class Citaodon(me.Document):
     record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
+    names=me.StringField()
+    lastnames = me.StringField()
     age = me.IntField()
-    fecha = me.DateTimeField(default=None)
+    document=me.StringField()
+    phone=me.StringField()
+    gender=me.StringField()
+    # tipo=me.StringField()
+    job_type = me.StringField()
+    fecha = me.DateTimeField()
     record_type = me.StringField()
     first_cita = me.BooleanField()
     reposo = me.IntField()
@@ -230,9 +239,16 @@ class Citaodon(me.Document):
     def get_json(self):
         return {
             "id": str(self.id),
-            "record_id": str(self.record_id),
-            "fecha": self.fecha,
+            "record_id": str(self.record_id.id),
+            "names":self.names,
+            "lastnames":self.lastnames,
+            # "tipo":self.tipo,
             "age": self.age,
+            "document":self.document,
+            "phone":self.phone,
+            "gender":self.gender,
+            "job_type": self.job_type,
+            "fecha": self.fecha,
             "record_type": self.record_type,
             "first_cita": self.first_cita,
             "reposo": self.reposo,
