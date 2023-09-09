@@ -186,7 +186,7 @@ class Cita(me.Document):
     tipo=me.StringField()
     job_type = me.StringField()
     area = me.StringField()
-    fecha = me.DateTimeField(default=datetime.utcnow())
+    fecha = me.DateTimeField()
     record_type = me.StringField()
     first_cita = me.BooleanField()
     tension_arterial = me.StringField()
@@ -201,7 +201,7 @@ class Cita(me.Document):
     def get_json(self):
         return {
             "id": str(self.id),
-            "record_id": str(self.record_id),
+            "record_id": str(self.record_id.id),
             "area" : self.area,
             "fecha": self.fecha,
             "age": self.age,

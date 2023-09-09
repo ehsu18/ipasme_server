@@ -321,7 +321,7 @@ def filter_records(request, text=''):
         raise
 
 
-def citas(request, record_id=None):
+def record_citas(request, record_id=None):
     if id and request.method == 'GET':
         try:
             resultados = models.Cita.objects(record_id=record_id)
@@ -337,13 +337,40 @@ def citas(request, record_id=None):
         except Exception:
             raise
             return JsonResponse({'error': 'internal server error'}, status=500)
-    
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
+def citas(request, cita_id=None):
+    if request.method ==  'GET':
+        try:
+            cita = models.Cita.objects.get(id=ObjectId(cita_id))
+            return JsonResponse(cita.get_json(), safe=False)
+        except (models.Cita.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': 'Does not exist'}, status=404)
+        except:
+            raise
     elif request.method ==  'POST':
         try:
             json = JSONParser().parse(request)
             cita = models.Cita(**json)
             cita.save()
             return JsonResponse({'result':'ok'})
+        except:
+            raise
+    elif request.method ==  'PUT':
+        try:
+            cita = models.Cita.objects.get(id=ObjectId(cita_id))
+            json = JSONParser().parse(request)
+            cita.modify(**json)
+            cita.save()
+            return JsonResponse({'result':'ok'})
+        except (models.Cita.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': 'Does not exist'}, status=404)
+        except (TypeError, ParseError,
+            IntegrityError) as e:
+            print(e)
+            return JsonResponse({'error': str(e)}, status=400)
         except:
             raise
     

@@ -14,8 +14,9 @@ urlpatterns = [
     path("filter_records", views.filter_records),
 
 
-    path('citas/<str:record_id>', views.citas),
+    path('record_citas/<str:record_id>', views.record_citas),
     path('citas', views.citas),
+    path('citas/<str:cita_id>', views.citas),
     path('citasodon/<str:record_id>', views.citasodon),
 
     path("reposos", views.reposos),
