@@ -374,7 +374,16 @@ def citas(request, cita_id=None):
             return JsonResponse({'error': str(e)}, status=400)
         except:
             raise
-    
+    elif request.method ==  'DELETE' and cita_id:
+        try:
+            cita = models.Cita.objects.get(id=ObjectId(cita_id))
+            cita.delete()
+            return JsonResponse({'result':'ok'})
+        except (models.Cita.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': 'Does not exist'}, status=404)
+        except:
+            raise
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
@@ -432,7 +441,16 @@ def citasodon(request, citaodon_id=None):
             return JsonResponse({'error': str(e)}, status=400)
         except:
             raise
-    
+    elif request.method ==  'DELETE' and citaodon_id:
+        try:
+            citaodon = models.Citaodon.objects.get(id=ObjectId(citaodon_id))
+            citaodon.delete()
+            return JsonResponse({'result':'ok'})
+        except (models.Cita.DoesNotExist,
+                InvalidId) as e:
+            return JsonResponse({'error': 'Does not exist'}, status=404)
+        except:
+            raise
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
