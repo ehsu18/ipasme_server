@@ -22,7 +22,7 @@ urlpatterns = [
     path('citasodon/<str:citaodon_id>', views.citasodon),
 
     path("reposos", views.reposos),
-    path("reposos/<str:id>", views.reposos),
+    path("reposos/<str:reposo_id>", views.reposos),
     path("search_reposos/<str:record_id>", views.search_reposos),
     path("cuidos", views.cuidos),
     path("cuidos/<str:id>", views.cuidos),

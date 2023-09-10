@@ -160,6 +160,8 @@ class Reposo(me.Document):
 
     def get_json(self):
         return {
+            "id":str(self.id),
+            "record_id":str(self.record_id.id),
             "fecha_inicio": self.fecha_inicio,
             "fecha_fin": self.fecha_fin,
             "dias": self.dias,
@@ -168,11 +170,45 @@ class Reposo(me.Document):
             "medico":self.medico,
             "especialidad":self.especialidad,
             "total_reposo":self.total_reposo,
-            "total_dias":self.total_dias,
-            "record_id":str(self.record_id)
-            # supongo que tenga un id o un index
+            "total_dias":self.total_dias
         }
     
+class Cuido(me.Document):
+    
+    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE)
+    fecha_inicio = me.DateTimeField(default=None)
+    fecha_fin = me.DateTimeField(default=None)
+    dias = me.IntField()
+    # beneficiary = me.StringField()
+    beneficiary_name = me.StringField()
+    beneficiary_lastname = me.StringField()
+    beneficiary_document = me.StringField()
+    beneficiary_id = me.StringField(default=None) 
+    # beneficiary_type = me.StringField()
+    reason = me.StringField()
+    total_cuido = me.IntField()
+    total_dias = me.IntField()
+
+    def get_json(self):
+        return {
+            "id":str(self.id),
+            "record_id":str(self.record_id.id),
+            "fecha_inicio": self.fecha_inicio,
+            "fecha_fin": self.fecha_fin,
+            "dias": self.dias,
+            # "beneficiary": self.beneficiary,
+            "beneficiary_name" : self.beneficiary_name,
+            "beneficiary_lastname" : self.beneficiary_lastname,
+            "beneficiary_document" : self.beneficiary_document,
+            "beneficiary_id" : self.beneficiary_id,
+            # "beneficiary_type" : self.beneficiary_type,
+            "reason" : self.reason,
+            "total_cuido":self.total_cuido,
+            "total_dias":self.total_dias,
+            
+            # supongo que tenga un id o un index
+        }
+  
 
 class Cita(me.Document):
 
@@ -255,35 +291,3 @@ class Citaodon(me.Document):
             "ref": self.ref,
             "diagnose" : self.diagnose
             }
-
-class Cuido(me.Document):
-    
-    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE)
-    fecha_inicio = me.DateTimeField(default=None)
-    fecha_fin = me.DateTimeField(default=None)
-    dias = me.IntField()
-    beneficiary = me.StringField()
-    beneficiary_name = me.StringField()
-    beneficiary_id = me.StringField(default=None) 
-    beneficiary_type = me.StringField()
-    reason = me.StringField()
-
-    total_cuido = me.IntField()
-    total_dias = me.IntField()
-
-    def get_json(self):
-        return {
-            "fecha_inicio": self.fecha_inicio,
-            "fecha_fin": self.fecha_fin,
-            "dias": self.dias,
-            "beneficiary": self.beneficiary,
-            "beneficiary_name" : self.beneficiary_id,
-            "beneficiary_id" : self.beneficiary_id,
-            "beneficiary_type" : self.beneficiary_type,
-            "reason" : self.reason,
-            "total_cuido":self.total_cuido,
-            "total_dias":self.total_dias,
-            "record_id":str(self.record_id)
-            # supongo que tenga un id o un index
-        }
-  

@@ -17,6 +17,10 @@ from collections.abc import MutableMapping
 
 # TODO va a tocar que la api permita elegir cuales fields quiere que se envien, que el frontend pueda pedirlos 
 
+# TODO se debe revisar el resultado de las operaciones en base de datos
+# para corroborar los resultados y no retornar un ok por defecto sino
+# basado en lo que diga la base de datos
+
 def record(request, id=None):
 
     if id and request.method == 'GET':
@@ -465,11 +469,11 @@ def search_reposos(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-def reposos(request, id=None):
+def reposos(request, reposo_id=None):
 
-    if id and request.method == 'GET':
+    if reposo_id and request.method == 'GET':
         try:
-            reposo = models.Reposo.objects.get(id=ObjectId(id))
+            reposo = models.Reposo.objects.get(id=ObjectId(reposo_id))
             return JsonResponse(reposo.get_json())
             
         except (models.Reposo.DoesNotExist,
@@ -483,13 +487,13 @@ def reposos(request, id=None):
 
         return JsonResponse([x.get_json() for x in models.Reposo.objects.all()], safe=False)
 
-    elif request.method == 'PUT' and id:
+    elif request.method == 'PUT' and reposo_id:
         try:
             # se puede pasar esto a una funcion
             data = JSONParser().parse(request)
             print(data)
 
-            reposo = models.Reposo.objects.get(id=ObjectId(id))
+            reposo = models.Reposo.objects.get(id=ObjectId(reposo_id))
             reposo.modify(**data)
             reposo.save()            
             return JsonResponse({'result': 'ok'})
@@ -504,30 +508,30 @@ def reposos(request, id=None):
             raise
             return JsonResponse({'error': 'bad request'}, status=400)
 
-    # elif request.method == 'POST':
-    #     try:
-    #         # TODO adaptar a la nueva api
-    #         aff = models.Affiliate(**JSONParser().parse(request))
-    #         aff.save()
-    #         return JsonResponse({'result': 'ok'})
+    elif request.method == 'POST':
+        try:
+            # TODO adaptar a la nueva api
+            reposo = models.Reposo(**JSONParser().parse(request))
+            reposo.save()
+            return JsonResponse({'result': 'ok'})
 
-    #     except (TypeError, ParseError,
-    #             IntegrityError, NotUniqueError) as e:
-    #         return JsonResponse({'error': str(e)}, status=400)
+        except (TypeError, ParseError,
+                IntegrityError, NotUniqueError) as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
-    #     except Exception as e:
-    #         # print(e)
-    #         raise
-    #         return JsonResponse({'error': 'bad request'}, status=400)
+        except Exception as e:
+            # print(e)
+            raise
+            return JsonResponse({'error': 'bad request'}, status=400)
 
-    # elif request.method == 'DELETE' and id:
-    #     try:
-    #         aff = models.Affiliate.objects.filter(id=ObjectId(id))
-    #         aff.delete()
-    #         return JsonResponse({'result': 'ok'})
-    #     except Exception as e:
-    #         print(e)
-    #         return JsonResponse({'error': 'Internal server error'}, status=500)
+    elif request.method == 'DELETE' and reposo_id:
+        try:
+            reposo = models.Reposo.objects.filter(id=ObjectId(reposo_id))
+            reposo.delete()
+            return JsonResponse({'result': 'ok'})
+        except Exception as e:
+            print(e)
+            return JsonResponse({'error': 'Internal server error'}, status=500)
 
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
@@ -547,6 +551,7 @@ def cuidos(request, id=None):
     if id and request.method == 'GET':
         try:
             cuido = models.Cuido.objects.get(id=ObjectId(id))
+            cuido.delete()
             return JsonResponse(cuido.get_json())
             
         except (models.Cuido.DoesNotExist,
@@ -580,6 +585,32 @@ def cuidos(request, id=None):
         except Exception as e:
             raise
             return JsonResponse({'error': 'bad request'}, status=400)
+
+    elif request.method == 'POST':
+        try:
+            # TODO adaptar a la nueva api
+            cuido = models.Cuido(**JSONParser().parse(request))
+            cuido.save()
+            return JsonResponse({'result': 'ok'})
+
+        except (TypeError, ParseError,
+                IntegrityError, NotUniqueError) as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+        except Exception as e:
+            # print(e)
+            raise
+            return JsonResponse({'error': 'bad request'}, status=400)
+
+    elif request.method == 'DELETE' and id:
+        try:
+            reposo = models.Cuido.objects.filter(id=ObjectId(id))
+            reposo.delete()
+            return JsonResponse({'result': 'ok'})
+        except Exception as e:
+            print(e)
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+
 
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
