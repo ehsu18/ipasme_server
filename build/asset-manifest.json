@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.3dae9def.css",
+    "main.js": "/static/js/main.09c9a2a4.js",
+    "static/media/logo-ipasme.png": "/static/media/logo-ipasme.de8d28a50db1525ca496.png",
+    "index.html": "/index.html",
+    "main.3dae9def.css.map": "/static/css/main.3dae9def.css.map",
+    "main.09c9a2a4.js.map": "/static/js/main.09c9a2a4.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3dae9def.css",
+    "static/js/main.09c9a2a4.js"
+  ]
+}
