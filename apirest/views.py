@@ -614,3 +614,12 @@ def cuidos(request, id=None):
 
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
+
+
+
+def record_count(request):
+    return JsonResponse({
+        'records':models.Record.objects().count(),
+        'affiliates':models.Record.objects(type='affiliate').count(),
+        'beneficiarys':models.Record.objects(type='beneficiary').count()
+    })
