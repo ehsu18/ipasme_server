@@ -59,6 +59,7 @@ class Record(me.Document):
     dateofbirth = me.DateTimeField(default=None) 
     civilstatus = me.StringField(max_length=255, choices=civilstatus_options)
     placeofbirth = me.StringField(max_length=255)
+    folder = me.StringField()
 
     # datos de contacto
     phone_personal = me.StringField(max_length=255)
@@ -116,7 +117,8 @@ class Record(me.Document):
                 'nationality' : self.nationality, 
                 'dateofbirth' : self.dateofbirth, 
                 'civilstatus' : self.civilstatus,
-                'placeofbirth' : self.placeofbirth
+                'placeofbirth' : self.placeofbirth,
+                'folder' : self.folder
             } ,
             'contact_info' : {
                 'phone_personal':self.phone_personal,
