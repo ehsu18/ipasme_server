@@ -2,6 +2,11 @@ from django.urls import path, register_converter
 from . import views
 
 urlpatterns = [    
+    path('login', views.login),
+    path('signup', views.signup),
+    path('test_token', views.test_token),
+    
+
     path('record', views.record), 
     path('record/<str:id>', views.record),
     path('record_affiliates/<str:affiliate_id>', views.record_affiliates),

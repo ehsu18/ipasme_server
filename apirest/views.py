@@ -9,9 +9,20 @@ from django.db.utils import IntegrityError
 from mongoengine.errors import NotUniqueError, FieldDoesNotExist, OperationError
 from bson import ObjectId
 from bson.errors import InvalidId
-import json
 from collections.abc import MutableMapping
 
+
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response as RestResponse
+from rest_framework import status
+
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+
+from .serializers import UserSerializer
 
 # TODO hacer bien todo el manejo de errores, mandar mensajes segun el error y manejar status 400  y 500
 
@@ -20,7 +31,36 @@ from collections.abc import MutableMapping
 # TODO se debe revisar el resultado de las operaciones en base de datos
 # para corroborar los resultados y no retornar un ok por defecto sino
 # basado en lo que diga la base de datos
+@api_view(['POST'])
+def login(request):
+    user = get_object_or_404(User, username=request.data['username'])
+    if not user.check_password(request.data['password']):
+        return RestResponse("missing user", status=status.HTTP_404_NOT_FOUND)
+    token, created = Token.objects.get_or_create(user=user)
+    serializer = UserSerializer(user)
+    return RestResponse({'token': token.key, 'user': serializer.data})
 
+@api_view(['POST'])
+def signup(request):
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        user = User.objects.get(username=request.data['username'])
+        user.set_password(request.data['password'])
+        user.save()
+        token = Token.objects.create(user=user)
+        return RestResponse({'token': token.key, 'user': serializer.data})
+    return RestResponse(serializer.errors, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def test_token(request):
+    return RestResponse("passed!")
+
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def record(request, id=None):
 
     if id and request.method == 'GET':
@@ -85,7 +125,9 @@ def record(request, id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def record_affiliates(request, affiliate_id=None):
     if request.method == 'GET' and affiliate_id:
         try:
@@ -120,6 +162,9 @@ def record_affiliates(request, affiliate_id=None):
     else:  # bad request
         return JsonResponse({'error': 'bad request'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def record_beneficiarys(request, affiliate_id=None):
     if request.method == 'POST' and affiliate_id:
         try:
@@ -243,6 +288,9 @@ def record_beneficiarys(request, affiliate_id=None):
     else:  # bad request
         return JsonResponse({'error': 'bad request'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def create_affiliate(request):
     try:
         new_record = models.Record(**JSONParser().parse(request), type='affiliate')
@@ -260,6 +308,9 @@ def create_affiliate(request):
     except Exception as e:
         raise
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def create_beneficiary(request, affiliate_id=None):
     try:
         aff = models.Record.objects.get(id=ObjectId(affiliate_id))
@@ -290,6 +341,9 @@ def create_beneficiary(request, affiliate_id=None):
     except Exception as e:
         raise
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def filter_affiliates(request, text=''):
     if not text: return JsonResponse([], safe=False) 
     try:
@@ -307,6 +361,9 @@ def filter_affiliates(request, text=''):
     except Exception as e:
         raise
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, models.CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
 def filter_records(request, text=''):
     if not text: return JsonResponse([], safe=False) 
     try:
@@ -324,7 +381,9 @@ def filter_records(request, text=''):
     except Exception as e:
         raise
 
-
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def record_citas(request, record_id=None):
     if record_id and request.method == 'GET':
         try:
@@ -344,6 +403,9 @@ def record_citas(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def citas(request, cita_id=None):
     if request.method ==  'GET' and cita_id:
         try:
@@ -391,6 +453,9 @@ def citas(request, cita_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def record_citasodon(request, record_id=None):
     if record_id and request.method == 'GET':
         try:
@@ -410,6 +475,9 @@ def record_citasodon(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def citasodon(request, citaodon_id=None):
     if request.method ==  'GET' and citaodon_id:
         try:
@@ -458,7 +526,9 @@ def citasodon(request, citaodon_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def search_reposos(request, record_id=None):
     if record_id and request.method == 'GET':
         try:
@@ -469,6 +539,9 @@ def search_reposos(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def reposos(request, reposo_id=None):
 
     if reposo_id and request.method == 'GET':
@@ -536,6 +609,9 @@ def reposos(request, reposo_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def search_cuidos(request, record_id=None):
     if record_id and request.method == 'GET':
         try:
@@ -546,6 +622,9 @@ def search_cuidos(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def cuidos(request, id=None):
 
     if id and request.method == 'GET':
@@ -615,8 +694,9 @@ def cuidos(request, id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-
-
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def record_count(request):
     return JsonResponse({
         'records':models.Record.objects().count(),
