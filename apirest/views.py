@@ -58,7 +58,7 @@ def signup(request):
 def test_token(request):
     return RestResponse("passed!")
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def record(request, id=None):
@@ -125,7 +125,7 @@ def record(request, id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def record_affiliates(request, affiliate_id=None):
@@ -162,7 +162,7 @@ def record_affiliates(request, affiliate_id=None):
     else:  # bad request
         return JsonResponse({'error': 'bad request'}, status=400)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def record_beneficiarys(request, affiliate_id=None):
@@ -288,7 +288,7 @@ def record_beneficiarys(request, affiliate_id=None):
     else:  # bad request
         return JsonResponse({'error': 'bad request'}, status=400)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def create_affiliate(request):
@@ -308,7 +308,7 @@ def create_affiliate(request):
     except Exception as e:
         raise
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def create_beneficiary(request, affiliate_id=None):
@@ -362,7 +362,7 @@ def filter_affiliates(request, text=''):
         raise
 
 @api_view(['GET'])
-@authentication_classes([SessionAuthentication, models.CustomTokenAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def filter_records(request, text=''):
     if not text: return JsonResponse([], safe=False) 
@@ -403,7 +403,7 @@ def record_citas(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def citas(request, cita_id=None):
@@ -475,7 +475,7 @@ def record_citasodon(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def citasodon(request, citaodon_id=None):
@@ -539,7 +539,7 @@ def search_reposos(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def reposos(request, reposo_id=None):
@@ -622,7 +622,7 @@ def search_cuidos(request, record_id=None):
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def cuidos(request, id=None):
@@ -630,7 +630,6 @@ def cuidos(request, id=None):
     if id and request.method == 'GET':
         try:
             cuido = models.Cuido.objects.get(id=ObjectId(id))
-            cuido.delete()
             return JsonResponse(cuido.get_json())
             
         except (models.Cuido.DoesNotExist,
@@ -648,7 +647,6 @@ def cuidos(request, id=None):
         try:
             # se puede pasar esto a una funcion
             data = JSONParser().parse(request)
-            print(data)
 
             cuido = models.Cuido.objects.get(id=ObjectId(id))
             cuido.modify(**data)
@@ -658,8 +656,8 @@ def cuidos(request, id=None):
         except (ParseError, FieldDoesNotExist,
                 models.Cuido.DoesNotExist,
                 OperationError) as e:
-            # raise
-            return JsonResponse({'error': str(e)}, status=400)
+            raise
+            return JsonResponse({'error': str(e)}, status=404)
 
         except Exception as e:
             raise
@@ -667,7 +665,6 @@ def cuidos(request, id=None):
 
     elif request.method == 'POST':
         try:
-            # TODO adaptar a la nueva api
             cuido = models.Cuido(**JSONParser().parse(request))
             cuido.save()
             return JsonResponse({'result': 'ok'})
