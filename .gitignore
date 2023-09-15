@@ -1,5 +1,5 @@
-*.sqlite3
 
+test.rest
 *.vscode
 venv/
 __pycache__/
