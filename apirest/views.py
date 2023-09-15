@@ -656,7 +656,7 @@ def cuidos(request, id=None):
         except (ParseError, FieldDoesNotExist,
                 models.Cuido.DoesNotExist,
                 OperationError) as e:
-            raise
+            # raise
             return JsonResponse({'error': str(e)}, status=404)
 
         except Exception as e:
