@@ -44,7 +44,7 @@ class Record(me.Document):
     type = me.StringField(max_length=255, choices=type_options)  
 
     document = me.StringField(required=True, unique=True, validation=document_validator)
-    names = me.StringField(max_length=255)
+    names = me.StringField(max_length=255) 
     lastnames = me.StringField(max_length=255)
     gender = me.StringField(max_length=255, choices=gender_options)
     nationality = me.StringField(max_length=255, choices=nationality_options)
@@ -52,6 +52,25 @@ class Record(me.Document):
     civilstatus = me.StringField(max_length=255, choices=civilstatus_options)
     placeofbirth = me.StringField(max_length=255)
     folder = me.StringField()
+
+    # @property
+    # def names(self):
+    #     return self._names
+    
+    # @names.setter
+    # def names(self, name):
+    #     try: self._names = str(name).lower()
+    #     except: return ValidationError('No string recieved')
+
+    # @property
+    # def lastnames(self):
+    #     return self._lastnames
+    
+    # @lastnames.setter
+    # def lastnames(self, lastname):
+    #     try: self._lastnames = str(lastname).lower()
+    #     except: return ValidationError('No string recieved')
+
 
     # datos de contacto
     phone_personal = me.StringField(max_length=255)

@@ -77,7 +77,7 @@ def record(request, id=None):
             return JsonResponse({'error': 'internal server error'}, status=500)
 
     elif request.method == 'GET':
-        lista = [r.get_json() for r in models.Record.objects.all()]
+        lista = [r.get_json() for r in models.Record.objects.order_by('+names')] # TODO aqui se puede usar agregation o hacer un @property en el modelo
         return JsonResponse(lista, safe=False)
 
     elif request.method == 'PUT' and id:
@@ -293,7 +293,9 @@ def record_beneficiarys(request, affiliate_id=None):
 @permission_classes([IsAuthenticated])
 def create_affiliate(request):
     try:
-        new_record = models.Record(**JSONParser().parse(request), type='affiliate')
+        datos = JSONParser().parse(request)
+        
+        new_record = models.Record(**datos, type='affiliate')
         #TODO ceudla
         new_record.save()
         return JsonResponse({'result': 'ok'})
@@ -347,8 +349,8 @@ def create_beneficiary(request, affiliate_id=None):
 def filter_affiliates(request, text=''):
     if not text: return JsonResponse([], safe=False) 
     try:
-        by_names = set(models.Record.objects(type='affiliate', names__contains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
-        by_document = set(models.Record.objects(type='affiliate', document__contains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        by_names = set(models.Record.objects(type='affiliate', names__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        by_document = set(models.Record.objects(type='affiliate', document__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
         result = set(by_names | by_document)
         
         return JsonResponse([{
@@ -367,8 +369,8 @@ def filter_affiliates(request, text=''):
 def filter_records(request, text=''):
     if not text: return JsonResponse([], safe=False) 
     try:
-        by_names = set(models.Record.objects(names__contains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
-        by_document = set(models.Record.objects(document__contains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        by_names = set(models.Record.objects(names__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        by_document = set(models.Record.objects(document__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
         result = set(by_names | by_document)
         print(result)
         return JsonResponse([{
