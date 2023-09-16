@@ -33,5 +33,7 @@ urlpatterns = [
     path("cuidos/<str:id>", views.cuidos),
     path("search_cuidos/<str:record_id>", views.search_cuidos),
 
+    path("informes", views.informes),
+
     path('records_count', views.record_count)
 ]

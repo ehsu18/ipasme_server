@@ -294,7 +294,7 @@ def record_beneficiarys(request, affiliate_id=None):
 def create_affiliate(request):
     try:
         datos = JSONParser().parse(request)
-        
+
         new_record = models.Record(**datos, type='affiliate')
         #TODO ceudla
         new_record.save()
@@ -702,3 +702,56 @@ def record_count(request):
         'affiliates':models.Record.objects(type='affiliate').count(),
         'beneficiarys':models.Record.objects(type='beneficiary').count()
     })
+
+@api_view(['GET', 'PUT', 'POST', 'DELETE'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def informes(request, informe_id=None):
+    if informe_id and request.method == 'GET':
+        try:
+            return JsonResponse(models.Informe.objects.get(id=ObjectId(informe_id)).get_json())
+        except (models.Informe.DoesNotExist, InvalidId) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+
+    elif request.method == 'GET':
+        return JsonResponse([x.get_json() for x in
+                             models.Informe.objects().all()], safe=False)
+    elif request.method == 'POST':
+        try:
+            informe = models.Informe(**JSONParser().parse(request))
+            informe.save()
+
+            return JsonResponse({'result': 'ok', 'informe_id':str(informe.id)})
+
+        except (TypeError, ParseError,
+                IntegrityError, NotUniqueError) as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    elif request.method == 'PUT' and informe_id:
+        try:
+            # se puede pasar esto a una funcion
+            data = JSONParser().parse(request)
+
+            informe = models.Informe.objects.get(id=ObjectId(informe_id))
+            informe.modify(**data)
+            informe.save()            
+            return JsonResponse({'result': 'ok'})
+
+        except (ParseError, FieldDoesNotExist,
+                models.Informe.DoesNotExist,
+                OperationError) as e:
+            # raise
+            return JsonResponse({'error': str(e)}, status=404)
+
+    elif request.method == 'DELETE' and informe_id:
+        try:
+            informe = models.Informe.objects.filter(id=ObjectId(id))
+            informe.delete()
+            return JsonResponse({'result': 'ok'})
+        except (models.Informe.DoesNotExist, InvalidId) as e:
+            return JsonResponse({'error': str(e)}, status=404)
+        except Exception as e:
+            print(e)
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)

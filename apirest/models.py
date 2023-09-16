@@ -306,3 +306,52 @@ class Citaodon(me.Document):
             "ref": self.ref,
             "diagnose" : self.diagnose
             }
+
+class Informe(me.Document):
+    # informe diario de estadisticas medicas
+
+    turnos_options = ('Diurno', 'Matutino')
+    nationality_options = (('V','Venezolano'), ('E', 'Extranjero'))
+
+    fecha = me.DateField()
+    turno = me.StringField(choices=turnos_options) 
+
+    medico = me.StringField()
+    medico_nationality = me.StringField(choices=nationality_options)
+    medico_document = me.IntField()
+    especialidad = me.StringField()
+    cod_especialidad = me.StringField()
+    horas_diarias= me.StringField()
+    tipo_cargo = me.StringField() # TODO poner choices aqui
+    medico_suplente = me.StringField()
+    medico_suplente_document = me.IntField()
+    medico_suplente_nationality = me.StringField(choices=nationality_options)
+    enfermera = me.StringField()
+    tiempo_consulta = me.StringField()
+    rendimiento_diario = me.StringField()
+
+    observaciones = me.StringField()
+
+    citas = me.ListField(me.ReferenceField(Cita))
+
+    def get_json(self):
+        return {
+            'id':str(self.id),
+            'fecha': self.fecha,
+            'turno': self.turno,
+            'medico': self.medico,
+            'medico_nationality':self.medico_nationality,
+            'medico_document':self.medico_document,
+            'especialidad' : self.especialidad,
+            'cod_especialidad': self.cod_especialidad,
+            'horas_diarias' : self.horas_diarias,
+            'tipo_cargo':self.tipo_cargo,
+            'medico_suplente':self.medico_suplente,
+            'medico_suplente_document':self.medico_suplente_document,
+            'medico_suplente_nationality':self.medico_suplente_nationality,
+            'enfermera':self.enfermera,
+            'tiempo_consulta':self.tiempo_consulta,
+            'rendimiento_diario':self.rendimiento_diario,
+            'observaciones':self.observaciones,
+            'citas':[x.id for x in self.citas],            
+        }
