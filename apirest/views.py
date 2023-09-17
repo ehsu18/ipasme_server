@@ -116,9 +116,27 @@ def record(request, id=None):
         try:
             # TODO falta algun tipo de validacion o no se
             # TODO cuando se borran los records hay que borrarlos de las listas de beneficiarys
-            del_record = models.Record.objects.filter(id=ObjectId(id))
+
+            del_record = models.Record.objects.get(id=ObjectId(id))
+
+ 
+            for i in del_record.beneficiarys:
+                # si el beneficiario tiene menos de dos afiliados se suma 1
+                if models.Record.objects(beneficiarys__record=i.record).count() == 1:
+                    try:
+                        beneficiary = models.Record.objects(id=i.record)
+                        beneficiary.delete()
+                    except:
+                        raise
+
+            for aff in models.Record.objects(beneficiarys__record=ObjectId(id)):
+                aff.beneficiarys = filter(lambda b: b.record != id ,aff.beneficiarys)
+                aff.save()
+
             del_record.delete()
             return JsonResponse({'result': 'ok'})
+
+
         except Exception as e:
             raise
 
@@ -350,8 +368,9 @@ def filter_affiliates(request, text=''):
     if not text: return JsonResponse([], safe=False) 
     try:
         by_names = set(models.Record.objects(type='affiliate', names__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        by_lastnames = set(models.Record.objects(type='affiliate', lastnames__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
         by_document = set(models.Record.objects(type='affiliate', document__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
-        result = set(by_names | by_document)
+        result = set(by_names | by_document | by_lastnames)
         
         return JsonResponse([{
             'names':x.names, 'lastnames':x.lastnames, 'id':str(x.id), 'document':x.document, 'nationality':x.nationality
@@ -370,8 +389,9 @@ def filter_records(request, text=''):
     if not text: return JsonResponse([], safe=False) 
     try:
         by_names = set(models.Record.objects(names__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
+        by_lastnames = set(models.Record.objects(lastnames__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
         by_document = set(models.Record.objects(document__icontains = text).only('names', 'lastnames', 'id', 'document', 'nationality').order_by('+names')[:5])
-        result = set(by_names | by_document)
+        result = set(by_names | by_document | by_lastnames)
         print(result)
         return JsonResponse([{
             'names':x.names, 'lastnames':x.lastnames, 'id':str(x.id), 'document':x.document, 'nationality':x.nationality
