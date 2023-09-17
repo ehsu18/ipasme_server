@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/static/css/main.d456fb55.css",
-    "main.js": "/static/js/main.bb568e9e.js",
+    "main.css": "/static/css/main.9bb9b3a4.css",
+    "main.js": "/static/js/main.bd6133d8.js",
     "static/media/fondo-ilustraciones.png": "/static/media/fondo-ilustraciones.f520c2c66ef7acd7b35b.png",
     "static/media/home-girl.svg": "/static/media/home-girl.36843a5ab5b89e9952616c4fc4437489.svg",
     "static/media/logo-ipasme.png": "/static/media/logo-ipasme.de8d28a50db1525ca496.png",
     "index.html": "/index.html",
-    "main.d456fb55.css.map": "/static/css/main.d456fb55.css.map",
-    "main.bb568e9e.js.map": "/static/js/main.bb568e9e.js.map"
+    "main.9bb9b3a4.css.map": "/static/css/main.9bb9b3a4.css.map",
+    "main.bd6133d8.js.map": "/static/js/main.bd6133d8.js.map"
   },
   "entrypoints": [
-    "static/css/main.d456fb55.css",
-    "static/js/main.bb568e9e.js"
+    "static/css/main.9bb9b3a4.css",
+    "static/js/main.bd6133d8.js"
   ]
 }
