@@ -223,90 +223,6 @@ class Cuido(me.Document):
             # supongo que tenga un id o un index
         }
   
-
-class Cita(me.Document):
-
-    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
-    names=me.StringField()
-    lastnames = me.StringField()
-    age=me.IntField()
-    document=me.StringField()
-    phone=me.StringField()
-    gender=me.StringField()
-    # tipo=me.StringField()
-    job_type = me.StringField()
-    area = me.StringField()
-    fecha = me.DateTimeField()
-    record_type = me.StringField()
-    first_cita = me.BooleanField()
-    tension_arterial = me.StringField()
-    peso = me.FloatField()
-    estudio_lab = me.BooleanField()
-    estudio_rx = me.BooleanField()
-    estudio_eco = me.BooleanField()
-    reposo = me.IntField()
-    ref = me.BooleanField()
-    diagnose = me.StringField()
-
-    def get_json(self):
-        return {
-            "id": str(self.id),
-            "record_id": str(self.record_id.id),
-            "area" : self.area,
-            "fecha": self.fecha,
-            "age": self.age,
-            "gender":self.gender,
-            "job_type" : self.job_type,
-            "record_type": self.record_type,
-            "first_cita": self.first_cita,
-            "tension_arterial": self.tension_arterial,
-            "peso": self.peso,
-            "estudio_lab": self.estudio_lab,
-            "estudio_rx": self.estudio_rx,
-            "estudio_eco": self.estudio_eco,
-            "reposo": self.reposo,
-            "ref": self.ref,
-            "diagnose" : self.diagnose
-            }
-
-
-class Citaodon(me.Document):
-    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
-    names=me.StringField()
-    lastnames = me.StringField()
-    age = me.IntField()
-    document=me.StringField()
-    phone=me.StringField()
-    gender=me.StringField()
-    # tipo=me.StringField()
-    job_type = me.StringField()
-    fecha = me.DateTimeField()
-    record_type = me.StringField()
-    first_cita = me.BooleanField()
-    reposo = me.IntField()
-    ref = me.BooleanField()
-    diagnose = me.StringField()
-
-    def get_json(self):
-        return {
-            "id": str(self.id),
-            "record_id": str(self.record_id.id),
-            "names":self.names,
-            "lastnames":self.lastnames,
-            # "tipo":self.tipo,
-            "age": self.age,
-            "document":self.document,
-            "phone":self.phone,
-            "gender":self.gender,
-            "job_type": self.job_type,
-            "fecha": self.fecha,
-            "record_type": self.record_type,
-            "first_cita": self.first_cita,
-            "reposo": self.reposo,
-            "ref": self.ref,
-            "diagnose" : self.diagnose
-            }
-
 class Informe(me.Document):
     # informe diario de estadisticas medicas
 
@@ -332,7 +248,6 @@ class Informe(me.Document):
 
     observaciones = me.StringField()
 
-    citas = me.ListField(me.ReferenceField(Cita))
 
     def get_json(self):
         return {
@@ -353,5 +268,95 @@ class Informe(me.Document):
             'tiempo_consulta':self.tiempo_consulta,
             'rendimiento_diario':self.rendimiento_diario,
             'observaciones':self.observaciones,
-            'citas':[x.id for x in self.citas],            
+            
         }
+    
+
+class Cita(me.Document):
+
+    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
+    names=me.StringField()
+    lastnames = me.StringField()
+    age=me.IntField()
+    document=me.StringField()
+    phone=me.StringField()
+    gender=me.StringField()
+    # tipo=me.StringField()
+    job_type = me.StringField()
+    area = me.StringField()
+    fecha = me.DateTimeField()
+    record_type = me.StringField()
+    first_cita = me.BooleanField()
+    tension_arterial = me.StringField()
+    peso = me.FloatField()
+    estudio_lab = me.BooleanField()
+    estudio_rx = me.BooleanField()
+    estudio_eco = me.BooleanField()
+    reposo = me.IntField()
+    ref = me.BooleanField()
+    diagnose = me.StringField()
+    informe = me.ReferenceField(Informe)
+
+    def get_json(self):
+        return {
+            "id": str(self.id),
+            "record_id": str(self.record_id.id),
+            "area" : self.area,
+            "fecha": self.fecha,
+            "age": self.age,
+            "gender":self.gender,
+            "job_type" : self.job_type,
+            "record_type": self.record_type,
+            "first_cita": self.first_cita,
+            "tension_arterial": self.tension_arterial,
+            "peso": self.peso,
+            "estudio_lab": self.estudio_lab,
+            "estudio_rx": self.estudio_rx,
+            "estudio_eco": self.estudio_eco,
+            "reposo": self.reposo,
+            "ref": self.ref,
+            "diagnose" : self.diagnose,
+            'informe':(str(self.informe.id) if self.informe else None)
+            }
+
+
+class Citaodon(me.Document):
+    record_id = me.ReferenceField(Record, reverse_delete_rule=me.CASCADE) 
+    names=me.StringField()
+    lastnames = me.StringField()
+    age = me.IntField()
+    document=me.StringField()
+    phone=me.StringField()
+    gender=me.StringField()
+    # tipo=me.StringField()
+    job_type = me.StringField()
+    fecha = me.DateTimeField()
+    record_type = me.StringField()
+    first_cita = me.BooleanField()
+    reposo = me.IntField()
+    ref = me.BooleanField()
+    diagnose = me.StringField()
+    informe = me.ReferenceField(Informe)
+
+    def get_json(self):
+        return {
+            "id": str(self.id),
+            "record_id": str(self.record_id.id),
+            "names":self.names,
+            "lastnames":self.lastnames,
+            # "tipo":self.tipo,
+            "age": self.age,
+            "document":self.document,
+            "phone":self.phone,
+            "gender":self.gender,
+            "job_type": self.job_type,
+            "fecha": self.fecha,
+            "record_type": self.record_type,
+            "first_cita": self.first_cita,
+            "reposo": self.reposo,
+            "ref": self.ref,
+            "diagnose" : self.diagnose,
+            'informe':(str(self.informe.id) if self.informe else None)
+            }
+
+

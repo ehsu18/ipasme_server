@@ -34,6 +34,8 @@ urlpatterns = [
     path("search_cuidos/<str:record_id>", views.search_cuidos),
 
     path("informes", views.informes),
+    path("informes/<str:informe_id>", views.informes),
 
-    path('records_count', views.record_count)
+    path('records_count', views.record_count),
+    path('search_informe_citas/<str:informe_id>', views.search_informe_citas)
 ]

@@ -421,6 +421,7 @@ def citas(request, cita_id=None):
     elif request.method ==  'POST':
         try:
             json = JSONParser().parse(request)
+            print(json)
             cita = models.Cita(**json)
             cita.save()
             return JsonResponse({'result':'ok'})
@@ -744,7 +745,7 @@ def informes(request, informe_id=None):
 
     elif request.method == 'DELETE' and informe_id:
         try:
-            informe = models.Informe.objects.filter(id=ObjectId(id))
+            informe = models.Informe.objects.filter(id=ObjectId(informe_id))
             informe.delete()
             return JsonResponse({'result': 'ok'})
         except (models.Informe.DoesNotExist, InvalidId) as e:
@@ -752,6 +753,21 @@ def informes(request, informe_id=None):
         except Exception as e:
             print(e)
             return JsonResponse({'error': 'Internal server error'}, status=500)
+
+    else:
+        return JsonResponse({'error': 'bad request'}, status=400)
+    
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def search_informe_citas(request, informe_id=None):
+    if informe_id and request.method == 'GET':
+        try:
+            citas = [x.get_json() for x in models.Cita.objects(informe=ObjectId(informe_id))]
+            # TODO agregar citas odon
+            return JsonResponse(citas, safe=False)
+        except Exception:
+            raise
 
     else:
         return JsonResponse({'error': 'bad request'}, status=400)
