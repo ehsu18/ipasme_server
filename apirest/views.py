@@ -444,7 +444,7 @@ def citas(request, cita_id=None):
             print(json)
             cita = models.Cita(**json)
             cita.save()
-            return JsonResponse({'result':'ok'})
+            return JsonResponse({'result':'ok', 'cita_id':str(cita.id)})
         except:
             raise
     elif request.method ==  'PUT' and cita_id:
@@ -516,7 +516,7 @@ def citasodon(request, citaodon_id=None):
             json = JSONParser().parse(request)
             citaodon = models.Citaodon(**json)
             citaodon.save()
-            return JsonResponse({'result':'ok'})
+            return JsonResponse({'result':'ok', 'citaodon_id':str(citaodon.id)})
         except:
             raise
     elif request.method ==  'PUT' and citaodon_id:

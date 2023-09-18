@@ -298,9 +298,26 @@ class Cita(me.Document):
     informe = me.ReferenceField(Informe)
 
     def get_json(self):
+        
+
+        try:
+            record_id = str(self.record_id.id)
+            record_data = {
+            'document':self.record_id.document,
+            'names':self.record_id.names,
+            'lastnames':self.record_id.lastnames,
+            'nationality':self.record_id.nationality
+            }
+        except:
+            record_id = None
+            record_data = {}
         return {
             "id": str(self.id),
-            "record_id": str(self.record_id.id),
+            "record_id": record_id,
+            "record_data":record_data,
+            'document':self.document,
+            'names':self.names,
+            'lastnames':self.lastnames,
             "area" : self.area,
             "fecha": self.fecha,
             "age": self.age,
