@@ -20,6 +20,7 @@ from rest_framework import status
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from rest_framework.authtoken.models import Token
 
 from .serializers import UserSerializer
@@ -40,23 +41,23 @@ def login(request):
     serializer = UserSerializer(user)
     return RestResponse({'token': token.key, 'user': serializer.data})
 
-@api_view(['POST'])
-def signup(request):
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        user = User.objects.get(username=request.data['username'])
-        user.set_password(request.data['password'])
-        user.save()
-        token = Token.objects.create(user=user)
-        return RestResponse({'token': token.key, 'user': serializer.data})
-    return RestResponse(serializer.errors, status=status.HTTP_200_OK)
+# @api_view(['POST'])
+# def signup(request):
+#     serializer = UserSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save()
+#         user = User.objects.get(username=request.data['username'])
+#         user.set_password(request.data['password'])
+#         user.save()
+#         token = Token.objects.create(user=user)
+#         return RestResponse({'token': token.key, 'user': serializer.data})
+#     return RestResponse(serializer.errors, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def test_token(request):
-    return RestResponse("passed!")
+# @api_view(['GET'])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+# def test_token(request):
+#     return RestResponse("passed!")
 
 @api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -130,7 +131,7 @@ def record(request, id=None):
                         raise
 
             for aff in models.Record.objects(beneficiarys__record=ObjectId(id)):
-                aff.beneficiarys = filter(lambda b: b.record != id ,aff.beneficiarys)
+                aff.beneficiarys = list(filter(lambda b: b.record != id ,aff.beneficiarys)) # TODO esto da un filter object, no una lista
                 aff.save()
 
             del_record.delete()

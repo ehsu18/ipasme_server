@@ -43,7 +43,7 @@ class Record(me.Document):
 
     type = me.StringField(max_length=255, choices=type_options)  
 
-    document = me.StringField(required=True, unique=True, validation=document_validator)
+    document = me.StringField(unique=True, validation=document_validator)
     names = me.StringField(max_length=255) 
     lastnames = me.StringField(max_length=255)
     gender = me.StringField(max_length=255, choices=gender_options)
