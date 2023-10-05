@@ -1,0 +1,5 @@
+carpeta build de frontend
+archivo bat de arranque local
+archivo pdf guia rapida
+settings de produccion
+db de produccion

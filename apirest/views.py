@@ -752,7 +752,7 @@ def informes(request, informe_id=None):
         try:
             # se puede pasar esto a una funcion
             data = JSONParser().parse(request)
-
+            print(data)
             informe = models.Informe.objects.get(id=ObjectId(informe_id))
             informe.modify(**data)
             informe.save()            
